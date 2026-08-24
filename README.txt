@@ -17,3 +17,12 @@ WordStack v6
 참고
 - 학습시간과 월별 복습 이력 그래프는 v6부터 날짜별로 누적됩니다. v5 이전 버전에는 해당 세부 타임스탬프가 없어 과거 월별 그래프로 복원할 수 없습니다.
 - GitHub Pages 같은 HTTPS 환경에서 PWA 설치가 가장 안정적입니다.
+
+[WordStack v7.2 Google Sync]
+- 연결 대상: Google 스프레드시트 '플래시카드_단어장_양식_v6'의 Flashcards 탭
+- 앱 카드 추가/수정: Google 동기화 대기로 표시되며, 현재 세션에 Google 권한이 있으면 자동 업로드합니다.
+- Google 시트 추가/수정: 앱에서 '구글동기화'를 누르면 앱으로 가져옵니다.
+- 앱에서 삭제한 카드/단어장은 다음 Google 동기화 때 시트에서도 삭제됩니다.
+- 동기화 열: EnglishWord, IPA, EnglishExample, KoreanMeaning, KoreanExample, Category, Chapter, Tags
+- 학습 이력/퀴즈 이력/간격반복 상태는 Google 시트로 보내지 않으며 앱의 로컬 데이터/JSON 백업에 유지됩니다.
+- 최초 1회 Google Cloud에서 Web application OAuth Client ID 생성 및 Google Sheets API 활성화가 필요합니다.

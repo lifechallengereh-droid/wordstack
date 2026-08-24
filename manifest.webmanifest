@@ -1,7 +1,7 @@
 {
   "name": "WordStack",
   "short_name": "WordStack",
-  "description": "WordStack — 기억이 쌓여 실력이 되는 스마트 플래시카드 학습 앱",
+  "description": "WordStack v7.2 — Google 스프레드시트 양방향 동기화를 지원하는 스마트 플래시카드 학습 앱",
   "start_url": "./index.html",
   "display": "standalone",
   "background_color": "#15184f",

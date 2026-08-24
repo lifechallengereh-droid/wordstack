@@ -9,6 +9,7 @@
   <link rel="icon" href="icons/icon-192.png" />
   <link rel="stylesheet" href="styles.css" />
   <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+  <script src="https://accounts.google.com/gsi/client" async defer></script>
 </head>
 <body>
   <div id="brandSplash" class="brand-splash" aria-hidden="true">
@@ -38,7 +39,7 @@
       <section id="study" class="panel active">
         <div class="hero-card">
           <div>
-            <span class="hero-kicker">TODAY</span>
+            <span class="hero-kicker" id="studyActualDate">0000-00-00 (요일)</span>
             <h2>오늘도 한 장씩,<br>기억을 오래 남겨요.</h2>
             <p id="dueSummary" class="hero-sub"></p>
           </div>
@@ -126,7 +127,7 @@
             <h3>엑셀 가져오기</h3>
             <p class="muted">EnglishWord, IPA, EnglishExample, KoreanMeaning, KoreanExample, Category, Chapter, Tags 열을 지원합니다.</p>
             <input type="file" id="excelInput" accept=".xlsx,.xls,.csv" />
-            <div class="row wrap"><button id="importExcel" class="primary">엑셀 불러오기</button><button id="exportExcel" class="secondary">현재 필터 엑셀 저장</button><button id="exportDbExcel" class="secondary">전체 단어DB 엑셀 다운로드</button></div>
+            <div class="row wrap"><button id="importExcel" class="primary">엑셀 불러오기</button><button id="googleSyncBtnCards" class="google-sync-btn">☁ 구글동기화</button><button id="exportExcel" class="secondary">현재 필터 엑셀 저장</button><button id="exportDbExcel" class="secondary">전체 단어DB 엑셀 다운로드</button></div><p id="googleSyncStatusCards" class="sync-status">Google 동기화 상태를 확인하는 중…</p>
           </div>
         </div>
         <div class="surface-card filter-card">
@@ -192,6 +193,15 @@
           </div>
           <p class="info-note">Category, Chapter, Tags는 앞면과 뒷면 양쪽에 동시에 표시할 수 있습니다.</p>
         </div>
+        <div class="surface-card google-sync-card">
+          <div class="sync-card-head"><div><span class="eyebrow">GOOGLE SYNC</span><h3>Google 스프레드시트 연동</h3><p class="muted">플래시카드_단어장_양식_v6 · Flashcards 탭과 양방향 동기화</p></div><span class="cloud-orb">☁</span></div>
+          <label>Google OAuth Client ID<input id="googleClientId" placeholder="예: 1234567890-xxxx.apps.googleusercontent.com" autocomplete="off" /></label>
+          <p class="info-note">Google Cloud에서 Web application OAuth Client ID를 1회 생성해 입력하세요. Authorized JavaScript origin에는 <strong id="googleOriginHint"></strong> 을 등록합니다.</p>
+          <label class="toggle-row"><span><strong>카드 저장 시 자동 동기화</strong><small>Google 로그인 권한이 살아 있는 동안 앱에서 저장한 카드를 자동 업로드</small></span><input type="checkbox" id="googleAutoSync" checked /></label>
+          <div class="row wrap"><button id="googleSyncBtn" class="google-sync-btn big-sync">☁ 구글동기화</button><button id="openGoogleSheetBtn" class="secondary">Google 시트 열기</button></div>
+          <p id="googleSyncStatus" class="sync-status">Google 동기화 상태를 확인하는 중…</p>
+          <p class="info-note">시트에서 추가·수정한 단어는 <b>구글동기화</b>를 누르면 앱으로 가져옵니다. 앱에서 새로 저장·수정한 카드는 동기화 시 시트에 반영됩니다.</p>
+        </div>
         <div class="surface-card"><h3>데이터 관리</h3><div class="row wrap"><button id="exportDbExcelSettings" class="secondary">전체 단어DB 엑셀 다운로드</button><button id="backupJson" class="secondary">전체 데이터 백업</button><label class="file-btn secondary">백업 복원<input type="file" id="restoreJson" accept=".json" hidden /></label><button id="resetData" class="danger">전체 초기화</button></div></div>
       </section>
     </main>
@@ -227,6 +237,7 @@
   </div>
   <div id="toast" class="toast hidden"></div>
   <script src="app.js"></script>
+  <script src="google-sync.js"></script>
 <script>
 window.addEventListener('load', () => {
   const splash = document.getElementById('brandSplash');

@@ -17,3 +17,7 @@
 - 전체 단어DB는 카드 관리 또는 설정 → `전체 단어DB 엑셀 다운로드`에서 `.xlsx`로 받을 수 있습니다.
 - 전체 학습 기록까지 보관하려면 설정 → `전체 데이터 백업`의 JSON도 함께 보관하세요.
 - 학습시간 및 월별 복습 상세 통계는 v6부터 기록됩니다.
+
+## WordStack v7.2 Google 동기화
+
+v7.2에서는 설정 화면에 **구글동기화**가 추가되었습니다. 자세한 최초 OAuth 설정은 `GOOGLE_SYNC_SETUP_KO.md`를 참고하세요. Google Sheets API를 활성화하고 Web application OAuth Client ID를 만든 뒤, GitHub Pages의 origin을 Authorized JavaScript origins에 등록해야 합니다.
