@@ -1,3 +1,15 @@
+function updateWordStackViewportHeight(){
+  const vv = window.visualViewport;
+  const h = Math.round(vv ? vv.height : window.innerHeight);
+  document.documentElement.style.setProperty('--ws-visual-height', `${h}px`);
+}
+updateWordStackViewportHeight();
+window.addEventListener('resize', updateWordStackViewportHeight, {passive:true});
+window.addEventListener('orientationchange', updateWordStackViewportHeight, {passive:true});
+if(window.visualViewport){
+  window.visualViewport.addEventListener('resize', updateWordStackViewportHeight, {passive:true});
+}
+
 const KEY='smartFlashcardsDataV1';
 const SETTINGS='smartFlashcardsSettingsV1';
 const todayISO=()=>{const d=new Date(),y=d.getFullYear(),m=String(d.getMonth()+1).padStart(2,'0'),day=String(d.getDate()).padStart(2,'0');return `${y}-${m}-${day}`};

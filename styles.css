@@ -1090,3 +1090,163 @@ body{
     padding-bottom:calc(58px + env(safe-area-inset-bottom)) !important;
   }
 }
+
+/* WordStack v7.2.6.5 — Android structural fix */
+@media (max-width:700px){
+  html{height:100%;min-height:100%;}
+  body.study-mode{margin:0!important;padding:0!important;width:100%!important;height:var(--ws-visual-height,100svh)!important;min-height:var(--ws-visual-height,100svh)!important;max-height:var(--ws-visual-height,100svh)!important;overflow:hidden!important;overscroll-behavior:none!important;}
+  body.study-mode .app-shell{width:100%!important;height:var(--ws-visual-height,100svh)!important;min-height:0!important;max-height:var(--ws-visual-height,100svh)!important;display:grid!important;grid-template-rows:auto minmax(0,1fr) 60px!important;overflow:hidden!important;}
+  body.study-mode .app-header{grid-row:1!important;position:relative!important;top:auto!important;min-height:0!important;height:auto!important;max-height:none!important;margin:0!important;padding:7px 12px!important;}
+  body.study-mode .brand-lockup{gap:7px!important;} body.study-mode .brand-icon{width:31px!important;height:31px!important;border-radius:9px!important;} body.study-mode .brand-name{font-size:15px!important;line-height:1!important;} body.study-mode .app-header #pageTitle{margin-top:2px!important;font-size:9px!important;line-height:1!important;} body.study-mode .header-actions{gap:5px!important;} body.study-mode .header-actions .icon-btn{width:31px!important;height:31px!important;min-width:31px!important;padding:0!important;}
+  body.study-mode .app-main{grid-row:2!important;width:100%!important;min-height:0!important;height:auto!important;overflow:hidden!important;margin:0!important;padding:5px 8px 4px!important;}
+  body.study-mode #study.panel.active{width:100%!important;height:100%!important;min-height:0!important;max-height:100%!important;overflow:hidden!important;display:flex!important;flex-direction:column!important;margin:0!important;padding:0!important;}
+  body.study-mode #study .hero-card{flex:0 0 49px!important;height:49px!important;min-height:49px!important;max-height:49px!important;margin:0 0 4px!important;padding:6px 10px!important;border-radius:14px!important;} body.study-mode #study .hero-card h2{display:none!important;} body.study-mode #study .hero-kicker{margin:0 0 2px!important;font-size:10px!important;line-height:1.05!important;} body.study-mode #study .hero-sub{margin:0!important;font-size:9px!important;line-height:1.05!important;white-space:nowrap!important;overflow:hidden!important;text-overflow:ellipsis!important;} body.study-mode #study .hero-ring{width:37px!important;height:37px!important;min-width:37px!important;} body.study-mode #study .hero-ring strong{font-size:15px!important;} body.study-mode #study .hero-ring span{font-size:7px!important;}
+  body.study-mode #study .section-head.compact{flex:0 0 34px!important;height:34px!important;min-height:34px!important;max-height:34px!important;margin:0 0 4px!important;gap:6px!important;align-items:center!important;} body.study-mode #study .section-head.compact>div{flex:0 0 auto!important;} body.study-mode #study .section-head.compact h3{margin:0!important;font-size:11px!important;line-height:1!important;white-space:nowrap!important;} body.study-mode #study .section-head.compact p{display:none!important;} body.study-mode #study .section-head.compact select{flex:1 1 auto!important;width:auto!important;max-width:none!important;min-width:0!important;height:30px!important;margin:0!important;padding:3px 24px 3px 8px!important;font-size:10px!important;}
+  body.study-mode #studyArea{flex:1 1 0!important;min-height:0!important;height:auto!important;overflow:hidden!important;display:flex!important;flex-direction:column!important;gap:3px!important;margin:0!important;padding:0!important;}
+  body.study-mode #study .study-card-stack{flex:1 1 0!important;min-height:100px!important;height:auto!important;max-height:none!important;position:relative!important;margin:0!important;padding:0 0 7px!important;} body.study-mode #study .study-card-stack #flashcard{position:absolute!important;inset:0 0 7px 0!important;width:100%!important;height:auto!important;min-height:0!important;max-height:none!important;padding:8px 10px!important;border-radius:17px!important;overflow:hidden!important;} body.study-mode #study .stack-card-back{top:2px!important;bottom:2px!important;left:7px!important;right:7px!important;height:auto!important;min-height:0!important;border-radius:17px!important;}
+  body.study-mode #study .card-main{font-size:clamp(20px,6vw,29px)!important;line-height:1.06!important;margin:2px 0!important;} body.study-mode #study .card-sub{font-size:clamp(10px,2.6vw,13px)!important;line-height:1.18!important;margin-top:4px!important;max-height:calc(100% - 54px)!important;overflow:auto!important;} body.study-mode #study .face-example{padding:4px 6px!important;margin-top:3px!important;font-size:10px!important;line-height:1.16!important;} body.study-mode #study .card-wave{display:none!important;}
+  body.study-mode #study .study-progress-row{flex:0 0 24px!important;height:24px!important;min-height:24px!important;margin:0!important;padding:0 1px!important;} body.study-mode #studyPosition{padding:2px 6px!important;font-size:9px!important;} body.study-mode .memory-toggle-wrap{gap:5px!important;} body.study-mode .memory-toggle-wrap>span:first-child{min-width:32px!important;font-size:9px!important;} body.study-mode .memory-switch{width:34px!important;height:19px!important;} body.study-mode .memory-switch::after{width:13px!important;height:13px!important;top:3px!important;left:3px!important;} body.study-mode .memory-status-toggle:checked+.memory-switch::after{transform:translateX(15px)!important;} body.study-mode #study .swipe-guide{display:none!important;}
+  body.study-mode #study #ttsStudyControls{flex:0 0 30px!important;height:30px!important;min-height:30px!important;margin:0!important;gap:4px!important;} body.study-mode #study #ttsStudyControls .soft-btn{height:30px!important;min-height:30px!important;padding:3px 5px!important;border-radius:8px!important;font-size:10px!important;}
+  body.study-mode #study #ratingBtns.hidden{display:none!important;flex:0 0 0!important;height:0!important;min-height:0!important;margin:0!important;padding:0!important;} body.study-mode #study #ratingBtns:not(.hidden){display:grid!important;flex:0 0 33px!important;height:33px!important;min-height:33px!important;margin:0!important;gap:4px!important;} body.study-mode #study .rate-btn{height:33px!important;min-height:33px!important;padding:2px 1px!important;border-radius:8px!important;} body.study-mode #study .rate-btn strong{font-size:9px!important;} body.study-mode #study .rate-btn small{font-size:7px!important;}
+  body.study-mode #study .study-tools{flex:0 0 27px!important;height:27px!important;min-height:27px!important;margin:0!important;padding:0!important;display:grid!important;grid-template-columns:1fr 1fr!important;gap:4px!important;} body.study-mode #study .study-tools .text-btn{height:27px!important;min-height:27px!important;margin:0!important;padding:2px 4px!important;font-size:9px!important;line-height:1!important;border-radius:8px!important;background:rgba(255,255,255,.045)!important;}
+  body.study-mode .bottom-nav{grid-row:3!important;position:relative!important;left:auto!important;right:auto!important;top:auto!important;bottom:auto!important;transform:none!important;width:100%!important;max-width:none!important;height:60px!important;min-height:60px!important;max-height:60px!important;margin:0!important;padding:4px 5px!important;border-radius:0!important;border-left:0!important;border-right:0!important;border-bottom:0!important;z-index:100!important;display:grid!important;grid-template-columns:repeat(5,minmax(0,1fr))!important;}
+  body.study-mode .bottom-nav .nav-item{height:50px!important;min-height:50px!important;margin:0!important;padding:3px 1px!important;} body.study-mode .bottom-nav .nav-item span{display:block!important;font-size:17px!important;line-height:1!important;} body.study-mode .bottom-nav .nav-item small{display:block!important;margin-top:3px!important;font-size:9px!important;line-height:1!important;white-space:nowrap!important;}
+}
+@media (max-width:700px) and (max-height:760px){
+  body.study-mode .app-shell{grid-template-rows:auto minmax(0,1fr) 56px!important;} body.study-mode .app-header{padding:4px 10px!important;} body.study-mode .brand-icon{width:27px!important;height:27px!important;} body.study-mode #study .hero-card{flex-basis:42px!important;height:42px!important;min-height:42px!important;max-height:42px!important;} body.study-mode #study .hero-sub{display:none!important;} body.study-mode #study .section-head.compact{flex-basis:30px!important;height:30px!important;min-height:30px!important;max-height:30px!important;} body.study-mode #study .section-head.compact select{height:28px!important;} body.study-mode #study .study-card-stack{min-height:82px!important;} body.study-mode #study #ttsStudyControls,body.study-mode #study #ttsStudyControls .soft-btn{height:27px!important;min-height:27px!important;flex-basis:27px!important;} body.study-mode #study .study-progress-row{height:22px!important;min-height:22px!important;flex-basis:22px!important;} body.study-mode #study #ratingBtns:not(.hidden),body.study-mode #study .rate-btn{height:30px!important;min-height:30px!important;} body.study-mode #study #ratingBtns:not(.hidden){flex-basis:30px!important;} body.study-mode #study .study-tools,body.study-mode #study .study-tools .text-btn{height:24px!important;min-height:24px!important;} body.study-mode #study .study-tools{flex-basis:24px!important;} body.study-mode .bottom-nav{height:56px!important;min-height:56px!important;max-height:56px!important;} body.study-mode .bottom-nav .nav-item{height:47px!important;min-height:47px!important;}
+}
+/* v7.2.6.5 final specificity guard: neutralize legacy :has() bottom spacer */
+@media (max-width:700px){
+  body.study-mode:has(#study.panel.active) .app-main{
+    padding:5px 8px 4px !important;
+  }
+}
+
+
+/* ==========================================================
+   WordStack v7.2.6.6 — smaller card / larger study controls
+   카드 높이는 약간 줄이고 하단 조작 버튼은 더 크게.
+   ========================================================== */
+@media (max-width:700px){
+
+  /* 카드가 남은 공간을 전부 먹지 않도록 상한을 두고 약간 축소 */
+  body.study-mode #study .study-card-stack{
+    flex:1 1 auto !important;
+    min-height:150px !important;
+    max-height:calc(100% - 128px) !important;
+  }
+
+  /* 카드 내부 여백도 소폭 축소해 실제 카드 체감 높이를 줄임 */
+  body.study-mode #study .study-card-stack #flashcard{
+    padding:7px 10px !important;
+  }
+  body.study-mode #study .card-main{
+    font-size:clamp(19px,5.7vw,27px) !important;
+    margin:2px 0 !important;
+  }
+  body.study-mode #study .card-sub{
+    max-height:calc(100% - 50px) !important;
+  }
+
+  /* 진행상태 행은 조금 더 여유 있게 */
+  body.study-mode #study .study-progress-row{
+    flex:0 0 28px !important;
+    height:28px !important;
+    min-height:28px !important;
+  }
+  body.study-mode #studyPosition{
+    font-size:10px !important;
+    padding:3px 8px !important;
+  }
+  body.study-mode .memory-toggle-wrap > span:first-child{
+    font-size:10px !important;
+  }
+
+  /* 카드 아래 주요 버튼 크게 */
+  body.study-mode #study #ttsStudyControls{
+    flex:0 0 40px !important;
+    height:40px !important;
+    min-height:40px !important;
+    gap:7px !important;
+  }
+  body.study-mode #study #ttsStudyControls .soft-btn{
+    height:40px !important;
+    min-height:40px !important;
+    padding:6px 8px !important;
+    border-radius:11px !important;
+    font-size:12px !important;
+    font-weight:800 !important;
+  }
+  body.study-mode #study #ttsStudyControls .soft-btn span{
+    margin-left:5px !important;
+  }
+
+  /* 카드 뒤집은 상태의 평가 버튼도 살짝 확대 */
+  body.study-mode #study #ratingBtns:not(.hidden){
+    flex:0 0 40px !important;
+    height:40px !important;
+    min-height:40px !important;
+    gap:5px !important;
+  }
+  body.study-mode #study .rate-btn{
+    height:40px !important;
+    min-height:40px !important;
+    padding:4px 2px !important;
+    border-radius:10px !important;
+  }
+  body.study-mode #study .rate-btn strong{
+    font-size:10px !important;
+  }
+  body.study-mode #study .rate-btn small{
+    font-size:8px !important;
+  }
+
+  /* 순서 섞기 / 앞뒤 전환도 터치하기 쉽게 확대 */
+  body.study-mode #study .study-tools{
+    flex:0 0 36px !important;
+    height:36px !important;
+    min-height:36px !important;
+    gap:7px !important;
+  }
+  body.study-mode #study .study-tools .text-btn{
+    height:36px !important;
+    min-height:36px !important;
+    padding:5px 6px !important;
+    font-size:11px !important;
+    font-weight:800 !important;
+    border-radius:10px !important;
+  }
+}
+
+/* 화면이 짧은 Android에서도 버튼 크기는 유지하되 카드만 더 줄임 */
+@media (max-width:700px) and (max-height:760px){
+  body.study-mode #study .study-card-stack{
+    min-height:90px !important;
+    max-height:calc(100% - 124px) !important;
+  }
+
+  body.study-mode #study #ttsStudyControls,
+  body.study-mode #study #ttsStudyControls .soft-btn{
+    height:36px !important;
+    min-height:36px !important;
+    flex-basis:36px !important;
+  }
+
+  body.study-mode #study #ratingBtns:not(.hidden),
+  body.study-mode #study .rate-btn{
+    height:36px !important;
+    min-height:36px !important;
+  }
+  body.study-mode #study #ratingBtns:not(.hidden){
+    flex-basis:36px !important;
+  }
+
+  body.study-mode #study .study-tools,
+  body.study-mode #study .study-tools .text-btn{
+    height:32px !important;
+    min-height:32px !important;
+  }
+  body.study-mode #study .study-tools{
+    flex-basis:32px !important;
+  }
+}
