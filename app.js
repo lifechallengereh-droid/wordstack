@@ -117,7 +117,7 @@ $('exportExcel').onclick=()=>exportCardsExcel(currentFilteredCards(),'flashcards
 $('exportDbExcel').onclick=()=>exportCardsExcel(state.cards,'wordstack_word_db.xlsx');
 $('exportDbExcelSettings').onclick=()=>exportCardsExcel(state.cards,'wordstack_word_db.xlsx');
 
-function refreshStudy(force=true){const deck=$('studyDeckFilter')?.value||'__all',due=dueCards(deck);$('dueSummary').textContent=`오늘 복습 ${due.length}장 · 전체 ${state.cards.filter(c=>inDeck(c,deck)).length}장`;$('heroDue').textContent=due.length;$('studyEmpty').classList.toggle('hidden',due.length>0);$('studyArea').classList.toggle('hidden',due.length===0);if(force||!studyQueue.length)studyQueue=shuffle(due);studyIndex=Math.min(studyIndex,Math.max(0,studyQueue.length-1));studyFlipped=false;showStudyCard()}
+function refreshStudy(force=true){const deck=$('studyDeckFilter')?.value||'__all',due=dueCards(deck);$('dueSummary').textContent=`오늘복습 ${due.length}장 · 전체 ${state.cards.filter(c=>inDeck(c,deck)).length}장`;$('heroDue').textContent=due.length;$('studyEmpty').classList.toggle('hidden',due.length>0);$('studyArea').classList.toggle('hidden',due.length===0);if(force||!studyQueue.length)studyQueue=shuffle(due);studyIndex=Math.min(studyIndex,Math.max(0,studyQueue.length-1));studyFlipped=false;showStudyCard()}
 function showStudyCard(){const c=studyQueue[studyIndex];if(!c)return;$('cardSideLabel').textContent=studyFlipped?'뒷면':'앞면';
   const posEl=$('studyPosition'); if(posEl) posEl.textContent=studyQueue.length?`${studyIndex+1} / ${studyQueue.length}`:'0 / 0';
   const memToggle=$('memoryStatusToggle'),memText=$('memoryStatusText');

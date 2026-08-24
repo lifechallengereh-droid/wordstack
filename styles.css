@@ -1299,3 +1299,80 @@ body{
     padding-bottom:4px;
   }
 }
+
+
+/* ==========================================================
+   WordStack v7.2.6.8 — one-line date/review header
+   날짜 / 오늘복습 · 전체를 한 줄로 표시하고 글씨 확대
+   ========================================================== */
+#study .hero-info-line{
+  display:flex;
+  align-items:center;
+  min-width:0;
+  gap:9px;
+  white-space:nowrap;
+}
+#study .hero-info-line .hero-kicker,
+#study .hero-info-line .hero-sub,
+#study .hero-info-line .hero-separator{
+  display:inline-block !important;
+  margin:0 !important;
+  line-height:1.2 !important;
+}
+#study .hero-info-line .hero-kicker{
+  font-size:15px !important;
+  font-weight:800 !important;
+  letter-spacing:.04em;
+}
+#study .hero-info-line .hero-separator{
+  font-size:17px !important;
+  font-weight:700 !important;
+  color:rgba(255,255,255,.72);
+}
+#study .hero-info-line .hero-sub{
+  font-size:14px !important;
+  font-weight:700 !important;
+  overflow:visible !important;
+  text-overflow:clip !important;
+  max-width:none !important;
+}
+#study .hero-card h2{display:none !important;}
+
+@media (max-width:700px){
+  body.study-mode #study .hero-card{
+    align-items:center !important;
+  }
+  body.study-mode #study .hero-info-line{
+    flex:1 1 auto !important;
+    min-width:0 !important;
+    gap:7px !important;
+  }
+  body.study-mode #study .hero-info-line .hero-kicker{
+    font-size:13px !important;
+    font-weight:850 !important;
+    letter-spacing:.035em !important;
+  }
+  body.study-mode #study .hero-info-line .hero-separator{
+    font-size:15px !important;
+  }
+  body.study-mode #study .hero-info-line .hero-sub{
+    font-size:12px !important;
+    font-weight:800 !important;
+  }
+}
+
+/* Narrow Android screens: keep one line, reduce only enough to avoid wrapping. */
+@media (max-width:380px){
+  body.study-mode #study .hero-info-line{
+    gap:5px !important;
+  }
+  body.study-mode #study .hero-info-line .hero-kicker{
+    font-size:11px !important;
+  }
+  body.study-mode #study .hero-info-line .hero-separator{
+    font-size:13px !important;
+  }
+  body.study-mode #study .hero-info-line .hero-sub{
+    font-size:10.5px !important;
+  }
+}
