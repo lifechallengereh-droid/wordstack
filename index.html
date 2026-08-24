@@ -113,6 +113,7 @@
             <form id="cardForm">
               <input id="editId" type="hidden" />
               <label>영어단어*<textarea id="englishWordInput" required placeholder="예: appreciate"></textarea></label>
+              <label>품사 / Part of Speech<input id="partOfSpeechInput" placeholder="예: verb, noun, adjective" /></label>
               <label>발음기호<input id="ipaInput" placeholder="예: /əˈpriːʃieɪt/" /></label>
               <label>영어예문<textarea id="englishExampleInput" placeholder="예: I really appreciate your help."></textarea></label>
               <label>한글의미*<textarea id="koreanMeaningInput" required placeholder="예: 감사하다, 진가를 알아보다"></textarea></label>
@@ -125,7 +126,7 @@
           </div>
           <div class="surface-card">
             <h3>엑셀 가져오기</h3>
-            <p class="muted">EnglishWord, IPA, EnglishExample, KoreanMeaning, KoreanExample, Category, Chapter, Tags 열을 지원합니다.</p>
+            <p class="muted">EnglishWord, PartOfSpeech, IPA, EnglishExample, KoreanMeaning, KoreanExample, Category, Chapter, Tags 열을 지원합니다.</p>
             <input type="file" id="excelInput" accept=".xlsx,.xls,.csv" />
             <div class="row wrap"><button id="importExcel" class="primary">엑셀 불러오기</button><button id="googleSyncBtnCards" class="google-sync-btn">☁ 구글동기화</button><button id="exportExcel" class="secondary">현재 필터 엑셀 저장</button><button id="exportDbExcel" class="secondary">전체 단어DB 엑셀 다운로드</button></div><p id="googleSyncStatusCards" class="sync-status">Google 동기화 상태를 확인하는 중…</p>
           </div>
@@ -196,6 +197,8 @@
         <div class="surface-card google-sync-card">
           <div class="sync-card-head"><div><span class="eyebrow">GOOGLE SYNC</span><h3>Google 스프레드시트 연동</h3><p class="muted">플래시카드_단어장_양식_v6 · Flashcards 탭과 양방향 동기화</p></div><span class="cloud-orb">☁</span></div>
           <label>Google OAuth Client ID<input id="googleClientId" placeholder="예: 1234567890-xxxx.apps.googleusercontent.com" autocomplete="off" /></label>
+          <label>Google Sheet URL<input id="googleSheetUrl" placeholder="https://docs.google.com/spreadsheets/d/.../edit" inputmode="url" autocomplete="off" /></label>
+          <p class="info-note">동기화할 Google 스프레드시트의 전체 URL을 붙여넣으세요. WordStack은 URL에서 Spreadsheet ID를 자동으로 추출하며 <b>Flashcards</b> 탭을 사용합니다.</p>
           <p class="info-note">Google Cloud에서 Web application OAuth Client ID를 1회 생성해 입력하세요. Authorized JavaScript origin에는 <strong id="googleOriginHint"></strong> 을 등록합니다.</p>
           <label class="toggle-row"><span><strong>카드 저장 시 자동 동기화</strong><small>Google 로그인 권한이 살아 있는 동안 앱에서 저장한 카드를 자동 업로드</small></span><input type="checkbox" id="googleAutoSync" checked /></label>
           <div class="row wrap"><button id="googleSyncBtn" class="google-sync-btn big-sync">☁ 구글동기화</button><button id="openGoogleSheetBtn" class="secondary">Google 시트 열기</button></div>

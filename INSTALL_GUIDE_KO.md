@@ -21,3 +21,7 @@
 ## WordStack v7.2 Google 동기화
 
 v7.2에서는 설정 화면에 **구글동기화**가 추가되었습니다. 자세한 최초 OAuth 설정은 `GOOGLE_SYNC_SETUP_KO.md`를 참고하세요. Google Sheets API를 활성화하고 Web application OAuth Client ID를 만든 뒤, GitHub Pages의 origin을 Authorized JavaScript origins에 등록해야 합니다.
+
+
+## v7.2.3 Google Sheet URL 선택
+설정 > Google 동기화에서 Google Sheet URL을 직접 입력할 수 있습니다. URL 예: https://docs.google.com/spreadsheets/d/<ID>/edit . WordStack은 URL에서 ID를 자동 추출하며 Flashcards 탭을 사용합니다. 새 시트로 바꾸면 첫 행은 EnglishWord, PartOfSpeech, IPA, EnglishExample, KoreanMeaning, KoreanExample, Category, Chapter, Tags 순서를 유지하세요.

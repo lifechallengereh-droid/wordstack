@@ -38,3 +38,7 @@ WordStack은 Google Drive의 **플래시카드_단어장_양식_v6 → Flashcard
 ## 주의
 
 연결 대상은 Google Drive에 있는 **Google 스프레드시트 버전**입니다. PC에 별도로 다운로드한 `.xlsx` 사본을 오프라인 Excel에서 수정하는 것만으로는 앱과 자동 동기화되지 않습니다. Google Drive의 해당 스프레드시트를 Google Sheets 웹/앱에서 편집해야 합니다.
+
+
+## v7.2.3 Google Sheet URL 선택
+설정 > Google 동기화에서 Google Sheet URL을 직접 입력할 수 있습니다. URL 예: https://docs.google.com/spreadsheets/d/<ID>/edit . WordStack은 URL에서 ID를 자동 추출하며 Flashcards 탭을 사용합니다. 새 시트로 바꾸면 첫 행은 EnglishWord, PartOfSpeech, IPA, EnglishExample, KoreanMeaning, KoreanExample, Category, Chapter, Tags 순서를 유지하세요.

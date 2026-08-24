@@ -23,6 +23,10 @@ WordStack v6
 - 앱 카드 추가/수정: Google 동기화 대기로 표시되며, 현재 세션에 Google 권한이 있으면 자동 업로드합니다.
 - Google 시트 추가/수정: 앱에서 '구글동기화'를 누르면 앱으로 가져옵니다.
 - 앱에서 삭제한 카드/단어장은 다음 Google 동기화 때 시트에서도 삭제됩니다.
-- 동기화 열: EnglishWord, IPA, EnglishExample, KoreanMeaning, KoreanExample, Category, Chapter, Tags
+- 동기화 열: EnglishWord, PartOfSpeech, IPA, EnglishExample, KoreanMeaning, KoreanExample, Category, Chapter, Tags
 - 학습 이력/퀴즈 이력/간격반복 상태는 Google 시트로 보내지 않으며 앱의 로컬 데이터/JSON 백업에 유지됩니다.
 - 최초 1회 Google Cloud에서 Web application OAuth Client ID 생성 및 Google Sheets API 활성화가 필요합니다.
+
+
+## v7.2.3 Google Sheet URL 선택
+설정 > Google 동기화에서 Google Sheet URL을 직접 입력할 수 있습니다. URL 예: https://docs.google.com/spreadsheets/d/<ID>/edit . WordStack은 URL에서 ID를 자동 추출하며 Flashcards 탭을 사용합니다. 새 시트로 바꾸면 첫 행은 EnglishWord, PartOfSpeech, IPA, EnglishExample, KoreanMeaning, KoreanExample, Category, Chapter, Tags 순서를 유지하세요.
