@@ -260,3 +260,141 @@ input,textarea,select{background:#0e173e!important;border-color:rgba(255,255,255
     padding-bottom:0 !important;
   }
 }
+
+
+/* WordStack v7.2.6.2 — first screen / bottom nav layout fix */
+:root{
+  --ws-bottom-nav-h:72px;
+}
+html,body{
+  min-height:100%;
+}
+body{
+  min-height:100dvh;
+}
+.app-shell{
+  min-height:100dvh;
+  display:flex;
+  flex-direction:column;
+}
+.app-main{
+  flex:1 0 auto;
+  width:100%;
+}
+#study.panel.active{
+  display:flex;
+  flex-direction:column;
+  min-height:0;
+}
+#studyArea{
+  display:flex;
+  flex-direction:column;
+  min-height:0;
+}
+#study .study-tools{
+  margin-top:8px !important;
+  margin-bottom:0 !important;
+  padding-bottom:0 !important;
+}
+#study .study-tools + *{
+  margin-top:0 !important;
+}
+
+/* Mobile app layout: nav is always at the visual bottom edge. */
+@media (max-width:700px){
+  .app-shell{
+    min-height:100dvh;
+  }
+  .app-main{
+    padding-bottom:calc(var(--ws-bottom-nav-h) + env(safe-area-inset-bottom) + 8px) !important;
+  }
+  .bottom-nav{
+    position:fixed !important;
+    left:0 !important;
+    right:0 !important;
+    bottom:0 !important;
+    transform:none !important;
+    width:100% !important;
+    max-width:none !important;
+    height:calc(var(--ws-bottom-nav-h) + env(safe-area-inset-bottom)) !important;
+    min-height:var(--ws-bottom-nav-h) !important;
+    border-radius:0 !important;
+    border-left:0 !important;
+    border-right:0 !important;
+    border-bottom:0 !important;
+    margin:0 !important;
+    padding:7px 8px calc(7px + env(safe-area-inset-bottom)) !important;
+    z-index:999 !important;
+    grid-template-columns:repeat(5,minmax(0,1fr)) !important;
+  }
+  .bottom-nav .nav-item{
+    min-width:0;
+    height:56px;
+    padding:5px 2px !important;
+    border-radius:14px;
+  }
+  .bottom-nav .nav-item span{
+    font-size:20px;
+    line-height:1;
+  }
+  .bottom-nav .nav-item small{
+    display:block;
+    margin-top:4px;
+    font-size:11px;
+    line-height:1;
+    white-space:nowrap;
+  }
+
+  /* Study first screen: content ends naturally just above fixed nav. */
+  #study{
+    margin:0 !important;
+    padding-bottom:0 !important;
+  }
+  #studyArea{
+    margin-bottom:0 !important;
+    padding-bottom:0 !important;
+  }
+  #study .study-tools{
+    min-height:34px;
+    margin:6px 0 0 !important;
+    padding:0 !important;
+  }
+  #study .study-tools button{
+    margin-bottom:0 !important;
+  }
+  #study .action-grid{
+    margin-bottom:0 !important;
+  }
+
+  /* Prevent the stacked cards from reserving phantom space. */
+  #study .study-card-stack{
+    height:auto !important;
+    min-height:0 !important;
+    padding-bottom:20px;
+  }
+  #study .study-card-stack #flashcard{
+    min-height:300px;
+    height:auto !important;
+  }
+  #study .stack-card-back{
+    top:0;
+    bottom:20px;
+    height:auto !important;
+    min-height:0 !important;
+  }
+
+  /* Compact vertical rhythm so "순서 섞기 / 앞뒤 전환" sits close to nav. */
+  #study .hero-card{margin-bottom:12px !important;}
+  #study .section-head.compact{margin-top:10px !important;margin-bottom:10px !important;}
+  #study .study-progress-row{margin:10px 2px 4px !important;}
+  #study .swipe-guide{margin:5px 2px 2px !important;}
+  #study #ttsStudyControls{margin-top:8px !important;}
+  #study #ratingBtns{margin-top:8px !important;}
+}
+
+/* On larger screens retain a centered floating dock. */
+@media (min-width:701px){
+  .bottom-nav{
+    max-width:560px;
+  }
+}
