@@ -91,3 +91,136 @@ input,textarea,select{background:#0e173e!important;border-color:rgba(255,255,255
 .google-sync-btn{border:0;border-radius:13px;padding:11px 15px;color:#fff;font-weight:800;background:linear-gradient(135deg,#8a46ee,#347cf4);box-shadow:0 8px 20px rgba(95,66,225,.24);cursor:pointer}.google-sync-btn:active{transform:translateY(1px)}.big-sync{min-height:48px;padding-inline:22px}.sync-status{margin:10px 0 0;font-size:12px;color:var(--muted,#9aa2c7);line-height:1.45}.google-sync-card input{width:100%}
 
 .pos-badge{display:inline-block;margin-left:6px;padding:2px 7px;border-radius:999px;background:rgba(116,72,238,.12);color:#8f7cff;font-size:11px;font-weight:800;vertical-align:middle}
+
+
+/* WordStack v7.2.4 — swipe card navigation */
+#flashcard{
+  touch-action: pan-y;
+  user-select:none;
+  -webkit-user-select:none;
+  will-change:transform,opacity;
+}
+#flashcard.swiping{
+  transition:none !important;
+  cursor:grabbing;
+}
+#flashcard:not(.swiping){
+  transition:transform .22s cubic-bezier(.22,.8,.3,1),opacity .2s ease,box-shadow .2s ease;
+}
+#flashcard.swipe-in-right{animation:wsSwipeNext .24s ease-out;}
+#flashcard.swipe-in-left{animation:wsSwipePrev .24s ease-out;}
+@keyframes wsSwipeNext{
+  from{transform:translateX(42px);opacity:.58}
+  to{transform:translateX(0);opacity:1}
+}
+@keyframes wsSwipePrev{
+  from{transform:translateX(-42px);opacity:.58}
+  to{transform:translateX(0);opacity:1}
+}
+.swipe-guide{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:10px;
+  margin:8px 2px 2px;
+  color:var(--muted,#83889b);
+  font-size:12px;
+}
+.swipe-guide span{
+  display:inline-flex;align-items:center;gap:5px;
+}
+
+/* WordStack v7.2.5 — stacked cards + graded swipe */
+.study-card-stack{
+  position:relative;
+  min-height:310px;
+  margin-top:4px;
+}
+.study-card-stack #flashcard{position:relative;z-index:3;}
+.stack-card-back{
+  position:absolute;
+  left:14px;right:14px;
+  height:calc(100% - 12px);
+  min-height:290px;
+  border-radius:26px;
+  background:linear-gradient(145deg,rgba(255,255,255,.94),rgba(236,239,255,.92));
+  border:1px solid rgba(104,82,220,.12);
+  box-shadow:0 12px 28px rgba(28,27,78,.11);
+  pointer-events:none;
+}
+.stack-card-back.back-1{z-index:2;transform:translateY(10px) scale(.975);}
+.stack-card-back.back-2{z-index:1;transform:translateY(20px) scale(.95);opacity:.72;}
+#flashcard.fly-left{animation:wsFlyLeft .2s ease-in forwards;}
+#flashcard.fly-right{animation:wsFlyRight .2s ease-in forwards;}
+@keyframes wsFlyLeft{to{transform:translateX(-125%) rotate(-14deg);opacity:.1}}
+@keyframes wsFlyRight{to{transform:translateX(125%) rotate(14deg);opacity:.1}}
+#flashcard.swipe-in-right{animation:wsDeckInRight .3s cubic-bezier(.18,.8,.28,1);}
+#flashcard.swipe-in-left{animation:wsDeckInLeft .3s cubic-bezier(.18,.8,.28,1);}
+@keyframes wsDeckInRight{from{transform:translateX(70px) scale(.96);opacity:.35}to{transform:none;opacity:1}}
+@keyframes wsDeckInLeft{from{transform:translateX(-70px) scale(.96);opacity:.35}to{transform:none;opacity:1}}
+.study-progress-row{
+  display:flex;justify-content:space-between;align-items:center;
+  margin:14px 4px 6px;font-size:13px;
+}
+#studyPosition{
+  font-weight:800;color:var(--text,#23263a);
+  background:rgba(105,75,225,.09);padding:6px 10px;border-radius:999px;
+}
+.toggle-row{
+  display:flex;align-items:center;justify-content:space-between;gap:16px;
+}
+.toggle-row span{display:flex;flex-direction:column;gap:3px;}
+.toggle-row small{color:var(--muted,#85899a);line-height:1.35;}
+.toggle-row input[type="checkbox"]{width:44px;height:24px;accent-color:#7048ee;}
+
+/* WordStack v7.2.6 — card memory ON/OFF status */
+.memory-toggle-wrap{
+  display:inline-flex;
+  align-items:center;
+  gap:9px;
+  cursor:pointer;
+  user-select:none;
+  -webkit-user-select:none;
+}
+.memory-toggle-wrap > span:first-child{
+  min-width:56px;
+  text-align:right;
+  font-size:12px;
+  font-weight:800;
+  color:var(--text,#2b2d3d);
+}
+.memory-status-toggle{
+  position:absolute;
+  opacity:0;
+  pointer-events:none;
+}
+.memory-switch{
+  position:relative;
+  width:48px;
+  height:27px;
+  border-radius:999px;
+  background:#9ca3af;
+  box-shadow:inset 0 0 0 1px rgba(0,0,0,.05);
+  transition:background .2s ease;
+}
+.memory-switch::after{
+  content:'';
+  position:absolute;
+  top:3px;
+  left:3px;
+  width:21px;
+  height:21px;
+  border-radius:50%;
+  background:#fff;
+  box-shadow:0 2px 7px rgba(0,0,0,.22);
+  transition:transform .2s ease;
+}
+.memory-status-toggle:checked + .memory-switch{
+  background:linear-gradient(135deg,#ee596d,#d63c58);
+}
+.memory-status-toggle:checked + .memory-switch::after{
+  transform:translateX(21px);
+}
+.memory-status-toggle:not(:checked) + .memory-switch{
+  background:linear-gradient(135deg,#35b779,#1c9c61);
+}

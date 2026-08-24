@@ -30,3 +30,6 @@ WordStack v6
 
 ## v7.2.3 Google Sheet URL 선택
 설정 > Google 동기화에서 Google Sheet URL을 직접 입력할 수 있습니다. URL 예: https://docs.google.com/spreadsheets/d/<ID>/edit . WordStack은 URL에서 ID를 자동 추출하며 Flashcards 탭을 사용합니다. 새 시트로 바꾸면 첫 행은 EnglishWord, PartOfSpeech, IPA, EnglishExample, KoreanMeaning, KoreanExample, Category, Chapter, Tags 순서를 유지하세요.
+
+
+WordStack v7.2.4: 학습 카드 좌우 스와이프 이동 지원 (왼쪽=다음, 오른쪽=이전).

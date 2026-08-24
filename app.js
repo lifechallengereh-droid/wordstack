@@ -47,6 +47,7 @@ function migrateCard(c){
   c.category=c.category||'기본 단어장';c.chapter=c.chapter||'';c.tags=c.tags||'';
   c.front=c.englishWord;c.back=c.koreanMeaning;c.example=c.englishExample;
   c.id=c.id||uid();c.ease=Number(c.ease)||2.5;c.interval=Number(c.interval)||0;c.reps=Number(c.reps)||0;c.reviews=Number(c.reviews)||0;
+  if(typeof c.memoryUnknown!=='boolean')c.memoryUnknown=true;
   c.due=c.due||todayISO();return c;
 }
 let state=load();
@@ -105,11 +106,130 @@ $('exportDbExcel').onclick=()=>exportCardsExcel(state.cards,'wordstack_word_db.x
 $('exportDbExcelSettings').onclick=()=>exportCardsExcel(state.cards,'wordstack_word_db.xlsx');
 
 function refreshStudy(force=true){const deck=$('studyDeckFilter')?.value||'__all',due=dueCards(deck);$('dueSummary').textContent=`오늘 복습 ${due.length}장 · 전체 ${state.cards.filter(c=>inDeck(c,deck)).length}장`;$('heroDue').textContent=due.length;$('studyEmpty').classList.toggle('hidden',due.length>0);$('studyArea').classList.toggle('hidden',due.length===0);if(force||!studyQueue.length)studyQueue=shuffle(due);studyIndex=Math.min(studyIndex,Math.max(0,studyQueue.length-1));studyFlipped=false;showStudyCard()}
-function showStudyCard(){const c=studyQueue[studyIndex];if(!c)return;$('cardSideLabel').textContent=studyFlipped?'뒷면':'앞면';$('cardMain').innerHTML=renderCardSide(c,studyFlipped?'back':'front');$('cardSub').textContent='';$('ratingBtns').classList.toggle('hidden',!studyFlipped);$('speakWordBtn').disabled=!c.englishWord;$('speakExampleBtn').disabled=!c.englishExample}
+function showStudyCard(){const c=studyQueue[studyIndex];if(!c)return;$('cardSideLabel').textContent=studyFlipped?'뒷면':'앞면';
+  const posEl=$('studyPosition'); if(posEl) posEl.textContent=studyQueue.length?`${studyIndex+1} / ${studyQueue.length}`:'0 / 0';
+  const memToggle=$('memoryStatusToggle'),memText=$('memoryStatusText');
+  if(memToggle){memToggle.checked=c.memoryUnknown!==false;}
+  if(memText){memText.textContent=(c.memoryUnknown!==false)?'모름':'암기완료';}$('cardMain').innerHTML=renderCardSide(c,studyFlipped?'back':'front');$('cardSub').textContent='';$('ratingBtns').classList.toggle('hidden',!studyFlipped);$('speakWordBtn').disabled=!c.englishWord;$('speakExampleBtn').disabled=!c.englishExample}
 function speakEnglish(text){if(!settings.ttsEnabled||!text||!/[A-Za-z]/.test(text)||!('speechSynthesis'in window))return;window.speechSynthesis.cancel();const u=new SpeechSynthesisUtterance(text);u.lang=settings.ttsLocale||'en-US';const voices=window.speechSynthesis.getVoices(),exact=voices.find(v=>v.lang===u.lang)||voices.find(v=>v.lang&&v.lang.startsWith('en'));if(exact)u.voice=exact;u.rate=Number(settings.ttsRate)||1;window.speechSynthesis.speak(u)}
 window.speakText=(id,side,e)=>{if(e)e.stopPropagation();const c=state.cards.find(x=>x.id===id);if(c)speakEnglish(c[side])};
-$('speakWordBtn').onclick=e=>{e.stopPropagation();const c=studyQueue[studyIndex];if(c)speakEnglish(c.englishWord)};$('speakExampleBtn').onclick=e=>{e.stopPropagation();const c=studyQueue[studyIndex];if(c)speakEnglish(c.englishExample)};$('flashcard').onclick=()=>{studyFlipped=!studyFlipped;showStudyCard()};$('flashcard').onkeydown=e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();$('flashcard').click()}};
+$('speakWordBtn').onclick=e=>{e.stopPropagation();const c=studyQueue[studyIndex];if(c)speakEnglish(c.englishWord)};
+$('speakExampleBtn').onclick=e=>{e.stopPropagation();const c=studyQueue[studyIndex];if(c)speakEnglish(c.englishExample)};
+
+let studySwipe={active:false,startX:0,startY:0,lastX:0,lastY:0,moved:false,suppressClick:false};
+const swipeCard=$('flashcard');
+const SWIPE_TRIGGER=72;
+const SWIPE_VERTICAL_LIMIT=90;
+
+function animateStudyCard(direction){
+  if(!swipeCard)return;
+  swipeCard.classList.remove('swipe-in-left','swipe-in-right','fly-left','fly-right');
+  void swipeCard.offsetWidth;
+  swipeCard.classList.add(direction==='next'?'swipe-in-right':'swipe-in-left');
+  window.setTimeout(()=>swipeCard.classList.remove('swipe-in-left','swipe-in-right'),320);
+}
+function navigateStudyCard(direction){
+  if(!studyQueue.length)return;
+  const nextIndex=direction==='next'?studyIndex+1:studyIndex-1;
+  if(nextIndex<0){toast('첫 번째 카드입니다.');return}
+  if(nextIndex>=studyQueue.length){toast('마지막 카드입니다.');return}
+  studyIndex=nextIndex;
+  studyFlipped=false;
+  showStudyCard();
+  animateStudyCard(direction);
+}
+function resetSwipeVisual(){
+  if(!swipeCard)return;
+  swipeCard.style.transform='';
+  swipeCard.style.opacity='';
+  swipeCard.classList.remove('swiping');
+}
+function beginStudySwipe(clientX,clientY){
+  studySwipe.active=true;studySwipe.startX=clientX;studySwipe.startY=clientY;
+  studySwipe.lastX=clientX;studySwipe.lastY=clientY;studySwipe.moved=false;
+  swipeCard?.classList.add('swiping');
+}
+function moveStudySwipe(clientX,clientY){
+  if(!studySwipe.active||!swipeCard)return;
+  studySwipe.lastX=clientX;studySwipe.lastY=clientY;
+  const dx=clientX-studySwipe.startX,dy=clientY-studySwipe.startY;
+  if(Math.abs(dx)>8||Math.abs(dy)>8)studySwipe.moved=true;
+  if(Math.abs(dx)>Math.abs(dy)){
+    const limited=Math.max(-125,Math.min(125,dx));
+    swipeCard.style.transform=`translateX(${limited}px) rotate(${limited/38}deg)`;
+    swipeCard.style.opacity=String(Math.max(.72,1-Math.abs(limited)/500));
+  }
+}
+function endStudySwipe(clientX,clientY){
+  if(!studySwipe.active)return;
+  const dx=clientX-studySwipe.startX,dy=clientY-studySwipe.startY;
+  studySwipe.active=false;
+  resetSwipeVisual();
+  if(Math.abs(dx)>=SWIPE_TRIGGER&&Math.abs(dx)>Math.abs(dy)*1.2&&Math.abs(dy)<SWIPE_VERTICAL_LIMIT){
+    studySwipe.suppressClick=true;
+    window.setTimeout(()=>studySwipe.suppressClick=false,380);
+    const dir=dx<0?'next':'prev';
+    swipeCard.classList.add(dx<0?'fly-left':'fly-right');
+    window.setTimeout(()=>{swipeCard.classList.remove('fly-left','fly-right');navigateStudyCard(dir)},180);
+  }
+}
+if(swipeCard){
+  swipeCard.addEventListener('touchstart',e=>{
+    if(e.touches.length!==1)return;
+    beginStudySwipe(e.touches[0].clientX,e.touches[0].clientY);
+  },{passive:true});
+  swipeCard.addEventListener('touchmove',e=>{
+    if(e.touches.length!==1)return;
+    moveStudySwipe(e.touches[0].clientX,e.touches[0].clientY);
+  },{passive:true});
+  swipeCard.addEventListener('touchend',e=>{
+    const t=e.changedTouches?.[0];
+    if(t)endStudySwipe(t.clientX,t.clientY);
+  },{passive:true});
+  swipeCard.addEventListener('touchcancel',()=>{studySwipe.active=false;resetSwipeVisual()},{passive:true});
+
+  swipeCard.addEventListener('pointerdown',e=>{
+    if(e.pointerType==='touch')return;
+    beginStudySwipe(e.clientX,e.clientY);
+    try{swipeCard.setPointerCapture(e.pointerId)}catch(_){}
+  });
+  swipeCard.addEventListener('pointermove',e=>{
+    if(e.pointerType==='touch')return;
+    moveStudySwipe(e.clientX,e.clientY);
+  });
+  swipeCard.addEventListener('pointerup',e=>{
+    if(e.pointerType==='touch')return;
+    endStudySwipe(e.clientX,e.clientY);
+  });
+  swipeCard.addEventListener('pointercancel',()=>{studySwipe.active=false;resetSwipeVisual()});
+
+  swipeCard.onclick=()=>{
+    if(studySwipe.suppressClick)return;
+    studyFlipped=!studyFlipped;showStudyCard()
+  };
+  swipeCard.onkeydown=e=>{
+    if(e.key==='Enter'||e.key===' '){e.preventDefault();swipeCard.click()}
+    if(e.key==='ArrowLeft'){e.preventDefault();navigateStudyCard('prev')}
+    if(e.key==='ArrowRight'){e.preventDefault();navigateStudyCard('next')}
+  };
+}
 function schedule(c,rate){let interval=Math.max(0,Number(c.interval)||0),ease=Math.max(1.3,Number(c.ease)||2.5),reps=Number(c.reps)||0;if(rate==='again'){interval=0;c.lapses=(c.lapses||0)+1;ease=Math.max(1.3,ease-.20)}else if(rate==='hard'){interval=reps===0?1:Math.max(1,interval*1.2);ease=Math.max(1.3,ease-.15);reps++}else if(rate==='good'){interval=reps===0?1:reps===1?3:Math.max(2,interval*ease);reps++}else{interval=reps===0?3:reps===1?6:Math.max(4,interval*ease*1.3);ease+=.15;reps++}c.ease=Number(ease.toFixed(2));c.interval=Math.round(interval);c.reps=reps;c.reviews=(c.reviews||0)+1;c.lastReviewed=todayISO();c.due=rate==='again'?todayISO():addDays(c.interval);state.totalReviews=(state.totalReviews||0)+1;state.reviewHistory.push({date:new Date().toISOString(),cardId:c.id,rate})}
+
+const memoryStatusToggle=$('memoryStatusToggle');
+if(memoryStatusToggle){
+  memoryStatusToggle.addEventListener('change',e=>{
+    e.stopPropagation();
+    const c=studyQueue[studyIndex];
+    if(!c)return;
+    c.memoryUnknown=memoryStatusToggle.checked;
+    const txt=$('memoryStatusText');
+    if(txt)txt.textContent=c.memoryUnknown?'모름':'암기완료';
+    persist();
+    toast(c.memoryUnknown?'이 카드를 ‘모름’으로 표시했습니다.':'이 카드를 ‘암기완료’로 표시했습니다.');
+  });
+  memoryStatusToggle.addEventListener('click',e=>e.stopPropagation());
+}
+
 $('ratingBtns').onclick=e=>{const b=e.target.closest('button[data-rate]');if(!b)return;const c=studyQueue[studyIndex];schedule(c,b.dataset.rate);if(b.dataset.rate==='again')studyQueue.push(c);studyIndex++;if(studyIndex>=studyQueue.length){persist();toast('오늘의 학습을 마쳤습니다.');studyQueue=[];studyIndex=0;refreshStudy(true)}else{persist();studyFlipped=false;showStudyCard();renderStats()}};
 $('shuffleStudy').onclick=()=>{studyQueue=shuffle(studyQueue.slice(studyIndex));studyIndex=0;showStudyCard()};$('reverseStudy').onclick=()=>{const f=settings.frontFields;settings.frontFields=[...settings.backFields];settings.backFields=[...f];settings.cardDirectionPreset='custom';saveSettings();renderFieldOptions();studyFlipped=false;showStudyCard();toast('앞면과 뒷면 구성을 서로 바꿨습니다.')};$('studyDeckFilter').onchange=()=>{studyQueue=[];studyIndex=0;refreshStudy(true)};
 
@@ -174,3 +294,5 @@ function navigate(id){if($('study').classList.contains('active')&&id!=='study')s
 window.navigate=navigate;document.querySelectorAll('[data-tab]').forEach(t=>t.onclick=()=>navigate(t.dataset.tab));document.querySelectorAll('[data-go]').forEach(t=>t.onclick=()=>navigate(t.dataset.go));$('deckMenuBtn').onclick=()=>navigate('decks');$('studyWeakBtn').onclick=()=>{$('studyDeckFilter').value='__weak';navigate('study')};
 let deferredPrompt=null;window.addEventListener('beforeinstallprompt',e=>{e.preventDefault();deferredPrompt=e;$('installBtn').classList.remove('hidden')});$('installBtn').onclick=async()=>{if(!deferredPrompt)return;deferredPrompt.prompt();await deferredPrompt.userChoice;deferredPrompt=null;$('installBtn').classList.add('hidden')};if('serviceWorker'in navigator)window.addEventListener('load',()=>navigator.serviceWorker.register('./sw.js').catch(console.warn));
 renderAll();startStudyTimer();setInterval(updateStudyActualDate,60000);
+
+

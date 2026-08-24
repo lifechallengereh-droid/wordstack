@@ -57,12 +57,25 @@
         </div>
 
         <div id="studyArea">
-          <div id="flashcard" class="flashcard premium-card" tabindex="0" role="button" aria-label="카드 뒤집기">
+          <div class="study-card-stack">
+            <div id="stackCardBack2" class="stack-card-back back-2" aria-hidden="true"></div>
+            <div id="stackCardBack1" class="stack-card-back back-1" aria-hidden="true"></div>
+            <div id="flashcard" class="flashcard premium-card" tabindex="0" role="button" aria-label="카드 뒤집기">
             <div class="card-topline"><span class="pill" id="cardSideLabel">앞면</span><span class="tap-hint">탭하여 뒤집기</span></div>
             <div class="card-main" id="cardMain">카드를 불러오는 중…</div>
             <div class="card-sub" id="cardSub"></div>
             <div class="card-wave">••••••••</div>
+            </div>
           </div>
+          <div class="study-progress-row">
+            <span id="studyPosition">0 / 0</span>
+            <label class="memory-toggle-wrap" for="memoryStatusToggle">
+              <span id="memoryStatusText">모름</span>
+              <input id="memoryStatusToggle" class="memory-status-toggle" type="checkbox" checked>
+              <span class="memory-switch" aria-hidden="true"></span>
+            </label>
+          </div>
+          <div class="swipe-guide" aria-hidden="true"><span>← 오른쪽: 이전 카드</span><span>왼쪽: 다음 카드 →</span></div>
           <div id="ttsStudyControls" class="action-grid two-col">
             <button id="speakWordBtn" class="soft-btn">🔊 <span>단어 듣기</span></button>
             <button id="speakExampleBtn" class="soft-btn">▶ <span>예문 듣기</span></button>
