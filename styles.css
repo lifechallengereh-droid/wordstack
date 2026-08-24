@@ -1250,3 +1250,52 @@ body{
     flex-basis:32px !important;
   }
 }
+
+
+/* ==========================================================
+   WordStack v7.2.6.7 — flashcard readability
+   품사 / 예문 / Category / Chapter / Tags 최소 2배 확대
+   ========================================================== */
+
+/* 모든 화면에서 카드의 보조정보 가독성 개선 */
+#flashcard .face-meta{
+  display:inline-block;
+  font-size:18px !important;
+  line-height:1.35 !important;
+  padding:5px 9px !important;
+  margin:4px 3px !important;
+  border-radius:10px !important;
+  vertical-align:middle;
+}
+#flashcard .face-example{
+  display:block;
+  font-size:20px !important;
+  line-height:1.42 !important;
+  padding:9px 11px !important;
+  margin-top:8px !important;
+  border-radius:12px !important;
+}
+
+/* Android 첫 화면에서도 위 크기를 절대 축소하지 않음 */
+@media (max-width:700px){
+  body.study-mode #study #flashcard .face-meta{
+    font-size:18px !important;
+    line-height:1.35 !important;
+    padding:5px 8px !important;
+    margin:3px 2px !important;
+  }
+  body.study-mode #study #flashcard .face-example{
+    font-size:20px !important;
+    line-height:1.38 !important;
+    padding:8px 10px !important;
+    margin-top:6px !important;
+  }
+
+  /* 큰 글씨 때문에 내용이 많을 경우 카드 내부만 스크롤 */
+  body.study-mode #study .card-sub{
+    overflow-y:auto !important;
+    overflow-x:hidden !important;
+    scrollbar-width:thin;
+    padding-bottom:4px;
+  }
+}
