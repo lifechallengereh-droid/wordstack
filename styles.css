@@ -224,3 +224,39 @@ input,textarea,select{background:#0e173e!important;border-color:rgba(255,255,255
 .memory-status-toggle:not(:checked) + .memory-switch{
   background:linear-gradient(135deg,#35b779,#1c9c61);
 }
+
+
+/* WordStack v7.2.6.1 — study tab spacing fix */
+#studyArea{
+  padding-bottom:0 !important;
+  margin-bottom:0 !important;
+}
+#study .study-card-stack{
+  height:350px;
+  min-height:350px;
+  margin-bottom:0;
+}
+#study .stack-card-back{
+  height:338px;
+  min-height:0;
+}
+#study .study-progress-row{
+  margin-top:12px;
+}
+#study .study-tools{
+  margin-bottom:0;
+  padding-bottom:0;
+}
+#study.panel.active{
+  padding-bottom:0;
+  margin-bottom:0;
+}
+/* Keep only enough clearance for the fixed bottom navigation on mobile. */
+@media (max-width:700px){
+  .app-main{
+    padding-bottom:88px !important;
+  }
+  #study{
+    padding-bottom:0 !important;
+  }
+}
