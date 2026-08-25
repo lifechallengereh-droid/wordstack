@@ -63,7 +63,7 @@ function migrateCard(c){
   c.due=c.due||todayISO();return c;
 }
 let state=load();
-let settings=Object.assign({newCardInterval:1,writtenStrictness:'normal',ttsEnabled:true,ttsLocale:'en-US',ttsRate:1,weakMinWrong:2,weakRate:0.4,cardDirectionPreset:'koFront',frontFields:DEFAULT_FRONT,backFields:DEFAULT_BACK,googleClientId:'',googleSheetUrl:'https://docs.google.com/spreadsheets/d/1Xlc6nummFrvCLkDiOMUtj_u4SpHwwwDlFcf95-N4g5I/edit',googleAutoSync:true},JSON.parse(localStorage.getItem(SETTINGS)||'{}'));
+let settings=Object.assign({newCardInterval:1,writtenStrictness:'normal',ttsEnabled:true,ttsLocale:'en-US',ttsRate:1,memoryQuizInterval:5,weakMinWrong:2,weakRate:0.4,cardDirectionPreset:'koFront',frontFields:DEFAULT_FRONT,backFields:DEFAULT_BACK,googleClientId:'',googleSheetUrl:'https://docs.google.com/spreadsheets/d/1Xlc6nummFrvCLkDiOMUtj_u4SpHwwwDlFcf95-N4g5I/edit',googleAutoSync:true},JSON.parse(localStorage.getItem(SETTINGS)||'{}'));
 if(!Array.isArray(settings.frontFields))settings.frontFields=[...DEFAULT_FRONT];if(!Array.isArray(settings.backFields))settings.backFields=[...DEFAULT_BACK];
 let studyQueue=[],studyIndex=0,studyFlipped=false;
 let quiz=[],quizIndex=0,quizAnswers=[],quizChecked=false,selectedMCQ=null;
@@ -92,11 +92,11 @@ function fillDeckSelect(id,allLabel='전체 단어장'){const el=$(id);if(!el)re
 
 function fieldValue(c,key){return String(c?.[key]??'').trim()}
 function sideFields(side){return side==='front'?settings.frontFields:settings.backFields}
-function renderCardSide(c,side){const fields=sideFields(side);const parts=[];fields.forEach(k=>{const v=fieldValue(c,k);if(!v)return;const d=FIELD_DEFS[k];if(k==='englishWord'||k==='koreanMeaning')parts.push(`<div class="face-primary ${d.lang}">${esc(v)}</div>`);else if(k==='ipa')parts.push(`<div class="face-ipa">${esc(v)}</div>`);else if(k==='englishExample'||k==='koreanExample')parts.push(`<div class="face-example ${d.lang}">${esc(v)}</div>`);else parts.push(`<span class="face-meta">${esc(d.label)} · ${esc(v)}</span>`)});return parts.join('')||'<div class="muted">표시할 정보가 없습니다. 설정에서 필드를 선택하세요.</div>'}
+function renderCardSide(c,side){const fields=sideFields(side);const parts=[];fields.forEach(k=>{const v=fieldValue(c,k);if(!v)return;const d=FIELD_DEFS[k];if(k==='englishWord'||k==='koreanMeaning')parts.push(`<div class="face-primary ${d.lang}">${esc(v)}</div>`);else if(k==='ipa')parts.push(`<div class="face-ipa">${esc(v)}</div>`);else if(k==='englishExample'||k==='koreanExample')parts.push(`<div class="face-example ${d.lang}">${esc(v)}</div>`);else if(['category','chapter','tags'].includes(k))parts.push(`<span class="face-meta meta-value-only">${esc(v)}</span>`);else parts.push(`<span class="face-meta">${esc(d.label)} · ${esc(v)}</span>`)});return parts.join('')||'<div class="muted">표시할 정보가 없습니다. 설정에서 필드를 선택하세요.</div>'}
 function sidePlain(c,side){return sideFields(side).map(k=>fieldValue(c,k)).filter(Boolean).join(' · ')}
 function sidePrimary(c,side){const fs=sideFields(side);const preferred=['englishWord','koreanMeaning'];for(const k of preferred)if(fs.includes(k)&&fieldValue(c,k))return fieldValue(c,k);for(const k of fs)if(fieldValue(c,k))return fieldValue(c,k);return ''}
 
-function renderAll(){updateStudyActualDate();ensureDeckMeta();fillDeckSelect('deckFilter');fillDeckSelect('studyDeckFilter');fillDeckSelect('quizDeck');renderChapterFilter();renderCards();renderDeckLibrary();renderWeakList();renderStats();renderFieldOptions();refreshStudy(false)}
+function renderAll(){updateStudyActualDate();ensureDeckMeta();fillDeckSelect('deckFilter');fillDeckSelect('studyDeckFilter');fillDeckSelect('quizDeck');renderMemoryQuizFilters();renderChapterFilter();renderCards();renderDeckLibrary();renderWeakList();renderStats();renderFieldOptions();refreshStudy(false)}
 
 function cardMatchesSearch(c,q){return [c.englishWord,c.partOfSpeech,c.ipa,c.englishExample,c.koreanMeaning,c.koreanExample,c.category,c.chapter,c.tags].join(' ').toLowerCase().includes(q)}
 function currentFilteredCards(){const q=$('searchCards').value.trim().toLowerCase();const d=$('deckFilter').value||'__all';const ch=$('chapterFilter')?.value||'__all';return state.cards.filter(c=>inDeck(c,d)&&(ch==='__all'||c.chapter===ch)&&(!q||cardMatchesSearch(c,q)))}
@@ -118,15 +118,39 @@ $('exportDbExcel').onclick=()=>exportCardsExcel(state.cards,'wordstack_word_db.x
 $('exportDbExcelSettings').onclick=()=>exportCardsExcel(state.cards,'wordstack_word_db.xlsx');
 
 function refreshStudy(force=true){const deck=$('studyDeckFilter')?.value||'__all',due=dueCards(deck);$('dueSummary').textContent=`오늘복습 ${due.length}장 · 전체 ${state.cards.filter(c=>inDeck(c,deck)).length}장`;$('heroDue').textContent=due.length;$('studyEmpty').classList.toggle('hidden',due.length>0);$('studyArea').classList.toggle('hidden',due.length===0);if(force||!studyQueue.length)studyQueue=shuffle(due);studyIndex=Math.min(studyIndex,Math.max(0,studyQueue.length-1));studyFlipped=false;showStudyCard()}
+function currentStudySide(){return studyFlipped?'back':'front'}
+function studySpeechTarget(c,kind){
+  const fields=sideFields(currentStudySide());
+  if(kind==='word'){
+    if(fields.includes('koreanMeaning')&&c.koreanMeaning)return{text:c.koreanMeaning,lang:'ko-KR'};
+    if(fields.includes('englishWord')&&c.englishWord)return{text:c.englishWord,lang:settings.ttsLocale||'en-US'};
+    if(c.koreanMeaning)return{text:c.koreanMeaning,lang:'ko-KR'};
+    if(c.englishWord)return{text:c.englishWord,lang:settings.ttsLocale||'en-US'};
+  }else{
+    if(fields.includes('koreanExample')&&c.koreanExample)return{text:c.koreanExample,lang:'ko-KR'};
+    if(fields.includes('englishExample')&&c.englishExample)return{text:c.englishExample,lang:settings.ttsLocale||'en-US'};
+    if(c.koreanExample)return{text:c.koreanExample,lang:'ko-KR'};
+    if(c.englishExample)return{text:c.englishExample,lang:settings.ttsLocale||'en-US'};
+  }
+  return{text:'',lang:'ko-KR'};
+}
 function showStudyCard(){const c=studyQueue[studyIndex];if(!c)return;$('cardSideLabel').textContent=studyFlipped?'뒷면':'앞면';
   const posEl=$('studyPosition'); if(posEl) posEl.textContent=studyQueue.length?`${studyIndex+1} / ${studyQueue.length}`:'0 / 0';
   const memToggle=$('memoryStatusToggle'),memText=$('memoryStatusText');
   if(memToggle){memToggle.checked=c.memoryUnknown!==false;}
-  if(memText){memText.textContent=(c.memoryUnknown!==false)?'모름':'암기완료';}$('cardMain').innerHTML=renderCardSide(c,studyFlipped?'back':'front');$('cardSub').textContent='';$('ratingBtns').classList.toggle('hidden',!studyFlipped);$('speakWordBtn').disabled=!c.englishWord;$('speakExampleBtn').disabled=!c.englishExample}
-function speakEnglish(text){if(!settings.ttsEnabled||!text||!/[A-Za-z]/.test(text)||!('speechSynthesis'in window))return;window.speechSynthesis.cancel();const u=new SpeechSynthesisUtterance(text);u.lang=settings.ttsLocale||'en-US';const voices=window.speechSynthesis.getVoices(),exact=voices.find(v=>v.lang===u.lang)||voices.find(v=>v.lang&&v.lang.startsWith('en'));if(exact)u.voice=exact;u.rate=Number(settings.ttsRate)||1;window.speechSynthesis.speak(u)}
-window.speakText=(id,side,e)=>{if(e)e.stopPropagation();const c=state.cards.find(x=>x.id===id);if(c)speakEnglish(c[side])};
-$('speakWordBtn').onclick=e=>{e.stopPropagation();const c=studyQueue[studyIndex];if(c)speakEnglish(c.englishWord)};
-$('speakExampleBtn').onclick=e=>{e.stopPropagation();const c=studyQueue[studyIndex];if(c)speakEnglish(c.englishExample)};
+  if(memText){memText.textContent=(c.memoryUnknown!==false)?'모름':'암기완료';}$('cardMain').innerHTML=renderCardSide(c,currentStudySide());$('cardSub').textContent='';$('ratingBtns').classList.toggle('hidden',!studyFlipped);
+  const wordTarget=studySpeechTarget(c,'word'),exampleTarget=studySpeechTarget(c,'example');
+  $('speakWordBtn').disabled=!wordTarget.text;$('speakExampleBtn').disabled=!exampleTarget.text;
+  $('speakWordBtn').title=wordTarget.lang.startsWith('ko')?'현재 카드의 한국어 단어 읽기':'현재 카드의 영어 단어 읽기';
+  $('speakExampleBtn').title=exampleTarget.lang.startsWith('ko')?'현재 카드의 한국어 예문 읽기':'현재 카드의 영어 예문 읽기';
+}
+function chooseVoice(lang){const voices=window.speechSynthesis?.getVoices?.()||[];const exact=voices.find(v=>String(v.lang).toLowerCase()===String(lang).toLowerCase());if(exact)return exact;const base=String(lang).slice(0,2).toLowerCase();return voices.find(v=>String(v.lang).toLowerCase().startsWith(base))||null}
+function speakByLang(text,lang,opts={}){if(!settings.ttsEnabled||!text||!('speechSynthesis'in window))return null;if(opts.cancel!==false)window.speechSynthesis.cancel();const u=new SpeechSynthesisUtterance(text);u.lang=lang||'ko-KR';const voice=chooseVoice(u.lang);if(voice)u.voice=voice;u.rate=Number(settings.ttsRate)||1;if(typeof opts.onend==='function')u.onend=opts.onend;if(typeof opts.onerror==='function')u.onerror=opts.onerror;window.speechSynthesis.speak(u);return u}
+function speakEnglish(text){if(!text||!/[A-Za-z]/.test(text))return;speakByLang(text,settings.ttsLocale||'en-US')}
+function speakKorean(text,opts={}){if(!text)return null;return speakByLang(text,'ko-KR',opts)}
+window.speakText=(id,side,e)=>{if(e)e.stopPropagation();const c=state.cards.find(x=>x.id===id);if(!c)return;const isKo=side==='koreanMeaning'||side==='koreanExample';speakByLang(c[side],isKo?'ko-KR':settings.ttsLocale||'en-US')};
+$('speakWordBtn').onclick=e=>{e.stopPropagation();const c=studyQueue[studyIndex];if(!c)return;const t=studySpeechTarget(c,'word');if(t.text)speakByLang(t.text,t.lang)};
+$('speakExampleBtn').onclick=e=>{e.stopPropagation();const c=studyQueue[studyIndex];if(!c)return;const t=studySpeechTarget(c,'example');if(t.text)speakByLang(t.text,t.lang)};
 
 let studySwipe={active:false,startX:0,startY:0,lastX:0,lastY:0,moved:false,suppressClick:false};
 const swipeCard=$('flashcard');
@@ -246,6 +270,121 @@ $('ratingBtns').onclick=e=>{const b=e.target.closest('button[data-rate]');if(!b)
 $('shuffleStudy').onclick=()=>{studyQueue=shuffle(studyQueue.slice(studyIndex));studyIndex=0;showStudyCard()};$('reverseStudy').onclick=()=>{const f=settings.frontFields;settings.frontFields=[...settings.backFields];settings.backFields=[...f];settings.cardDirectionPreset='custom';saveSettings();renderFieldOptions();studyFlipped=false;showStudyCard();toast('앞면과 뒷면 구성을 서로 바꿨습니다.')};$('studyDeckFilter').onchange=()=>{studyQueue=[];studyIndex=0;refreshStudy(true)};
 
 function quizCards(){return state.cards.filter(c=>inDeck(c,$('quizDeck').value))}
+
+// ===== 암기퀴즈: 한국어 자극 → 영어 회상 훈련 =====
+let memoryListMode='word';
+let memoryQuizRunning=false;
+let memoryQuizTimer=null;
+let memoryQuizRunId=0;
+
+function memoryDeckOptions(){
+  const el=$('memoryQuizDeck');if(!el)return;
+  const prev=el.value;
+  const ds=decks();
+  el.innerHTML=ds.map(d=>`<option value="${esc(d)}">${esc(deckMeta(d).icon)} ${esc(d)}</option>`).join('')||'<option value="">단어장 없음</option>';
+  if(ds.includes(prev))el.value=prev;else if(ds.length)el.value=ds[0];
+}
+function memoryChapterOptions(){
+  const el=$('memoryQuizChapter');if(!el)return;
+  const deck=$('memoryQuizDeck')?.value||'';
+  const prev=el.value;
+  const chs=deck?deckChapters(deck):[];
+  el.innerHTML='<option value="__all">전체 챕터</option>'+chs.map(ch=>`<option value="${esc(ch)}">${esc(ch)}</option>`).join('');
+  if([...el.options].some(o=>o.value===prev))el.value=prev;else if(chs.length)el.value=chs[0];else el.value='__all';
+}
+function renderMemoryQuizFilters(){
+  if(!$('memoryQuizDeck'))return;
+  const current=$('memoryQuizDeck').value;
+  memoryDeckOptions();
+  if(current&&[...$('memoryQuizDeck').options].some(o=>o.value===current))$('memoryQuizDeck').value=current;
+  memoryChapterOptions();
+  renderMemoryQuizTable();
+  updateMemoryIntervalLabel();
+}
+function memoryQuizCards(){
+  const deck=$('memoryQuizDeck')?.value||'';
+  const chapter=$('memoryQuizChapter')?.value||'__all';
+  if(!deck)return[];
+  return state.cards.filter(c=>c.category===deck&&(chapter==='__all'||c.chapter===chapter));
+}
+function memoryQuizItems(mode=memoryListMode){
+  const field=mode==='example'?'koreanExample':'koreanMeaning';
+  return memoryQuizCards().map(c=>({id:c.id,text:String(c[field]||'').trim()})).filter(x=>x.text);
+}
+function setMemoryListMode(mode){
+  memoryListMode=mode==='example'?'example':'word';
+  $('memoryWordListTab')?.classList.toggle('active',memoryListMode==='word');
+  $('memoryExampleListTab')?.classList.toggle('active',memoryListMode==='example');
+  renderMemoryQuizTable();
+}
+function renderMemoryQuizTable(){
+  const table=$('memoryQuizTable');if(!table)return;
+  const items=memoryQuizItems();
+  const isExample=memoryListMode==='example';
+  $('memoryTableTitle').textContent=isExample?'한국어 예문 목록':'한국어 단어 목록';
+  $('memoryContentHeader').textContent=isExample?'한국어 예문':'한국어 단어';
+  $('memoryTableCount').textContent=`${items.length}개`;
+  table.innerHTML=items.map((item,i)=>`<tr><td class="memory-no-col"><strong>${i+1}</strong></td><td>${esc(item.text)}</td></tr>`).join('')||`<tr><td colspan="2" class="muted">선택한 범위에 ${isExample?'한국어 예문':'한국어 단어'}이 없습니다.</td></tr>`;
+}
+function updateMemoryIntervalLabel(){const sec=Math.min(10,Math.max(2,Number(settings.memoryQuizInterval)||5));if($('memoryQuizIntervalLabel'))$('memoryQuizIntervalLabel').textContent=`${sec}초`}
+function stopMemoryQuiz(silent=false){
+  memoryQuizRunId++;
+  memoryQuizRunning=false;
+  clearTimeout(memoryQuizTimer);memoryQuizTimer=null;
+  if('speechSynthesis'in window)window.speechSynthesis.cancel();
+  if($('stopMemoryQuiz'))$('stopMemoryQuiz').disabled=true;
+  if($('startMemoryWords'))$('startMemoryWords').disabled=false;
+  if($('startMemoryExamples'))$('startMemoryExamples').disabled=false;
+  if(!silent&&$('memoryQuizProgress'))$('memoryQuizProgress').innerHTML=`중지됨 · 발화간격 <strong>${Number(settings.memoryQuizInterval)||5}초</strong>`;
+}
+function startMemoryQuiz(mode){
+  if(!settings.ttsEnabled)return toast('설정에서 음성 읽기(TTS)를 켜주세요.');
+  if(!('speechSynthesis'in window))return toast('이 기기에서 음성 읽기를 사용할 수 없습니다.');
+  setMemoryListMode(mode);
+  const items=memoryQuizItems(mode);
+  if(!items.length)return toast(mode==='example'?'읽을 한국어 예문이 없습니다.':'읽을 한국어 단어가 없습니다.');
+  stopMemoryQuiz(true);
+  memoryQuizRunning=true;
+  const runId=++memoryQuizRunId;
+  const sec=Math.min(10,Math.max(2,Number(settings.memoryQuizInterval)||5));
+  $('stopMemoryQuiz').disabled=false;$('startMemoryWords').disabled=true;$('startMemoryExamples').disabled=true;
+  const speakIndex=(i)=>{
+    if(!memoryQuizRunning||runId!==memoryQuizRunId)return;
+    if(i>=items.length){
+      memoryQuizRunning=false;$('stopMemoryQuiz').disabled=true;$('startMemoryWords').disabled=false;$('startMemoryExamples').disabled=false;
+      $('memoryQuizProgress').innerHTML=`완료 · ${items.length}개 발화 완료`;
+      return;
+    }
+    const label=mode==='example'?'예문':'단어';
+    $('memoryQuizProgress').innerHTML=`${i+1} / ${items.length} · ${label} 발화 중`;
+    const spoken=`${i+1}번. ${items[i].text}`;
+    speakKorean(spoken,{cancel:false,onend:()=>{
+      if(!memoryQuizRunning||runId!==memoryQuizRunId)return;
+      $('memoryQuizProgress').innerHTML=`${i+1} / ${items.length} · 다음 발화까지 ${sec}초`;
+      memoryQuizTimer=setTimeout(()=>speakIndex(i+1),sec*1000);
+    },onerror:()=>{
+      if(!memoryQuizRunning||runId!==memoryQuizRunId)return;
+      memoryQuizTimer=setTimeout(()=>speakIndex(i+1),sec*1000);
+    }});
+  };
+  speakIndex(0);
+}
+function setQuizMode(mode){
+  const memory=mode==='memory';
+  $('standardQuizTab')?.classList.toggle('active',!memory);$('memoryQuizTab')?.classList.toggle('active',memory);
+  $('standardQuizPane')?.classList.toggle('hidden',memory);$('memoryQuizPane')?.classList.toggle('hidden',!memory);
+  if(memory){renderMemoryQuizFilters()}else{stopMemoryQuiz(true)}
+}
+$('standardQuizTab').onclick=()=>setQuizMode('standard');
+$('memoryQuizTab').onclick=()=>setQuizMode('memory');
+$('memoryQuizDeck').onchange=()=>{stopMemoryQuiz(true);memoryChapterOptions();renderMemoryQuizTable()};
+$('memoryQuizChapter').onchange=()=>{stopMemoryQuiz(true);renderMemoryQuizTable()};
+$('memoryWordListTab').onclick=()=>{stopMemoryQuiz(true);setMemoryListMode('word')};
+$('memoryExampleListTab').onclick=()=>{stopMemoryQuiz(true);setMemoryListMode('example')};
+$('startMemoryWords').onclick=()=>startMemoryQuiz('word');
+$('startMemoryExamples').onclick=()=>startMemoryQuiz('example');
+$('stopMemoryQuiz').onclick=()=>stopMemoryQuiz(false);
+
 function buildQuiz(){const cards=quizCards();if(cards.length<2){$('quizWarning').textContent='퀴즈를 만들려면 최소 2개의 카드가 필요합니다.';return false}const mix=$('quizMix').value;let types=mix==='mcq'?Array(20).fill('mcq'):mix==='written'?Array(20).fill('written'):shuffle([...Array(10).fill('mcq'),...Array(10).fill('written')]);const src=shuffle(cards);quiz=types.map((type,i)=>{const c=src[i%src.length],rev=$('includeReverse').checked&&Math.random()<.5;const qSide=rev?'back':'front',aSide=rev?'front':'back',question=sidePrimary(c,qSide),answer=sidePrimary(c,aSide);let options=[];if(type==='mcq'){const pool=shuffle(cards.filter(x=>x.id!==c.id).map(x=>sidePrimary(x,aSide)).filter(x=>x&&x!==answer));options=shuffle([answer,...[...new Set(pool)].slice(0,3)]);while(options.length<4)options.push(`(선택지 ${options.length+1})`)}return{id:uid(),cardId:c.id,type,question,answer,explanation:c.englishExample||c.koreanExample||`정답: ${answer}`,options,reverse:rev}});return true}
 $('startQuiz').onclick=()=>{if(!buildQuiz())return;quizIndex=0;quizAnswers=[];$('quizSetup').classList.add('hidden');$('quizResult').classList.add('hidden');$('quizRun').classList.remove('hidden');showQuiz()};
 function showQuiz(){quizChecked=false;selectedMCQ=null;const q=quiz[quizIndex];$('quizProgressText').textContent=`${quizIndex+1} / 20`;$('quizProgress').value=quizIndex+1;$('quizType').textContent=q.type==='mcq'?'4지선다형':'주관식';$('quizQuestion').textContent=`${q.question}의 정답은?`;$('answerFeedback').classList.add('hidden');$('submitAnswer').classList.remove('hidden');$('nextQuestion').classList.add('hidden');$('writtenAnswer').value='';if(q.type==='mcq'){$('mcqOptions').classList.remove('hidden');$('writtenArea').classList.add('hidden');$('mcqOptions').innerHTML=q.options.map((o,i)=>`<button class="option" data-value="${esc(o)}"><strong>${String.fromCharCode(65+i)}.</strong><span>${esc(o)}</span></button>`).join('')}else{$('mcqOptions').classList.add('hidden');$('writtenArea').classList.remove('hidden');setTimeout(()=>$('writtenAnswer').focus(),50)}}
@@ -285,8 +424,8 @@ $('backupJson').onclick=backup;$('restoreJson').onchange=e=>{const f=e.target.fi
 $('resetData').onclick=()=>{if(confirm('모든 카드와 학습 기록을 삭제할까요? 이 작업은 되돌릴 수 없습니다.')){state={cards:[],quizHistory:[],totalReviews:0,deckMeta:{},studySecondsByDate:{},reviewHistory:[],googleDeletedKeys:[],googleSync:{}};save();window.renderGoogleSyncStatus?.();toast('초기화했습니다.')}};
 function downloadBlob(blob,name){const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=name;a.click();setTimeout(()=>URL.revokeObjectURL(a.href),1000)}
 
-$('newCardInterval').value=String(settings.newCardInterval);$('writtenStrictness').value=settings.writtenStrictness;$('ttsEnabled').checked=!!settings.ttsEnabled;$('ttsLocale').value=settings.ttsLocale||'en-US';$('ttsRate').value=String(settings.ttsRate||1);$('weakMinWrong').value=String(settings.weakMinWrong||2);
-$('newCardInterval').onchange=()=>{settings.newCardInterval=Number($('newCardInterval').value);saveSettings()};$('writtenStrictness').onchange=()=>{settings.writtenStrictness=$('writtenStrictness').value;saveSettings()};$('ttsEnabled').onchange=()=>{settings.ttsEnabled=$('ttsEnabled').checked;saveSettings()};$('ttsLocale').onchange=()=>{settings.ttsLocale=$('ttsLocale').value;saveSettings();speakEnglish('pronunciation')};$('ttsRate').onchange=()=>{settings.ttsRate=Number($('ttsRate').value);saveSettings();speakEnglish('This is a pronunciation speed sample.')};$('weakMinWrong').onchange=()=>{settings.weakMinWrong=Number($('weakMinWrong').value);saveSettings();renderAll()};
+$('newCardInterval').value=String(settings.newCardInterval);$('writtenStrictness').value=settings.writtenStrictness;$('ttsEnabled').checked=!!settings.ttsEnabled;$('ttsLocale').value=settings.ttsLocale||'en-US';$('ttsRate').value=String(settings.ttsRate||1);$('memoryQuizInterval').value=String(Math.min(10,Math.max(2,Number(settings.memoryQuizInterval)||5)));$('weakMinWrong').value=String(settings.weakMinWrong||2);
+$('newCardInterval').onchange=()=>{settings.newCardInterval=Number($('newCardInterval').value);saveSettings()};$('writtenStrictness').onchange=()=>{settings.writtenStrictness=$('writtenStrictness').value;saveSettings()};$('ttsEnabled').onchange=()=>{settings.ttsEnabled=$('ttsEnabled').checked;saveSettings()};$('ttsLocale').onchange=()=>{settings.ttsLocale=$('ttsLocale').value;saveSettings();speakEnglish('pronunciation')};$('ttsRate').onchange=()=>{settings.ttsRate=Number($('ttsRate').value);saveSettings();speakEnglish('This is a pronunciation speed sample.')};$('memoryQuizInterval').onchange=()=>{settings.memoryQuizInterval=Math.min(10,Math.max(2,Number($('memoryQuizInterval').value)||5));saveSettings();updateMemoryIntervalLabel();if(memoryQuizRunning)stopMemoryQuiz(false)};$('weakMinWrong').onchange=()=>{settings.weakMinWrong=Number($('weakMinWrong').value);saveSettings();renderAll()};
 
 function openDeckEditor(name=''){ensureDeckMeta();$('deckOriginalName').value=name;$('deckNameInput').value=name||'';const m=name?deckMeta(name):{icon:'📘',color:'#6258e8',chapters:[]};$('deckIconInput').value=m.icon||'📘';$('deckColorInput').value=m.color||'#6258e8';$('deckChaptersInput').value=(name?deckChapters(name):[]).join(', ');$('deckModalTitle').textContent=name?'단어장 편집':'새 단어장';$('deleteDeckBtn').classList.toggle('hidden',!name);$('deckModal').classList.remove('hidden');setTimeout(()=>$('deckNameInput').focus(),50)}
 window.openDeckEditor=openDeckEditor;window.editDeck=encoded=>openDeckEditor(decodeURIComponent(encoded));window.quickAddChapter=encoded=>{const d=decodeURIComponent(encoded);openDeckEditor(d);setTimeout(()=>$('deckChaptersInput').focus(),80)};
@@ -302,7 +441,7 @@ function attachChapterDrag(){document.querySelectorAll('.chapter-order-item').fo
 $('sortChaptersNaturalBtn').onclick=()=>{chapterOrderDraft.sort(naturalChapterSort);renderChapterOrderList()};$('saveChapterOrderBtn').onclick=()=>{deckMeta(chapterOrderDeck).chapters=[...chapterOrderDraft];persist();$('chapterOrderModal').classList.add('hidden');renderDeckLibrary();renderStats();toast('챕터 순서를 저장했습니다.')};$('closeChapterOrderModal').onclick=()=>{$('chapterOrderModal').classList.add('hidden')};$('chapterOrderModal').onclick=e=>{if(e.target===$('chapterOrderModal'))$('chapterOrderModal').classList.add('hidden')};
 
 const PAGE_TITLES={study:'오늘의 학습',weak:'취약단어',quiz:'퀴즈',stats:'연간 학습 통계',settings:'설정',decks:'내 단어장',cards:'카드 관리'};
-function navigate(id){if($('study').classList.contains('active')&&id!=='study')stopStudyTimer();document.querySelectorAll('.panel').forEach(x=>x.classList.remove('active'));$(id)?.classList.add('active');document.body.classList.toggle('study-mode',id==='study');document.querySelectorAll('.nav-item').forEach(x=>x.classList.toggle('active',x.dataset.tab===id));$('pageTitle').textContent=PAGE_TITLES[id]||'WordStack';if(id==='study'){refreshStudy(true);startStudyTimer()}if(id==='stats')renderStats();if(id==='decks')renderDeckLibrary();if(id==='weak')renderWeakList();window.scrollTo({top:0,behavior:'smooth'})}
+function navigate(id){if(id!=='quiz'&&typeof stopMemoryQuiz==='function')stopMemoryQuiz(true);if($('study').classList.contains('active')&&id!=='study')stopStudyTimer();document.querySelectorAll('.panel').forEach(x=>x.classList.remove('active'));$(id)?.classList.add('active');document.body.classList.toggle('study-mode',id==='study');document.querySelectorAll('.nav-item').forEach(x=>x.classList.toggle('active',x.dataset.tab===id));$('pageTitle').textContent=PAGE_TITLES[id]||'WordStack';if(id==='study'){refreshStudy(true);startStudyTimer()}if(id==='stats')renderStats();if(id==='decks')renderDeckLibrary();if(id==='weak')renderWeakList();window.scrollTo({top:0,behavior:'smooth'})}
 window.navigate=navigate;document.querySelectorAll('[data-tab]').forEach(t=>t.onclick=()=>navigate(t.dataset.tab));document.querySelectorAll('[data-go]').forEach(t=>t.onclick=()=>navigate(t.dataset.go));$('deckMenuBtn').onclick=()=>navigate('decks');$('studyWeakBtn').onclick=()=>{$('studyDeckFilter').value='__weak';navigate('study')};
 let deferredPrompt=null;window.addEventListener('beforeinstallprompt',e=>{e.preventDefault();deferredPrompt=e;$('installBtn').classList.remove('hidden')});$('installBtn').onclick=async()=>{if(!deferredPrompt)return;deferredPrompt.prompt();await deferredPrompt.userChoice;deferredPrompt=null;$('installBtn').classList.add('hidden')};if('serviceWorker'in navigator)window.addEventListener('load',()=>navigator.serviceWorker.register('./sw.js').catch(console.warn));
 renderAll();startStudyTimer();setInterval(updateStudyActualDate,60000);

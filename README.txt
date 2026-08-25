@@ -33,3 +33,6 @@ WordStack v6
 
 
 WordStack v7.2.4: 학습 카드 좌우 스와이프 이동 지원 (왼쪽=다음, 오른쪽=이전).
+
+
+WordStack v7.2.6.9: Category/Chapter/Tags 라벨 제거, 한국어 카드 TTS, 암기퀴즈(한국어 단어/예문 순차 발화), 발화간격 2~10초 설정 지원.

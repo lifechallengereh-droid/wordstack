@@ -1376,3 +1376,63 @@ body{
     font-size:10.5px !important;
   }
 }
+
+
+/* ==========================================================
+   WordStack v7.2.6.9 — Korean TTS + Memorization Quiz
+   ========================================================== */
+#flashcard .face-meta.meta-value-only{
+  font-weight:800 !important;
+}
+.quiz-mode-tabs{
+  display:grid;grid-template-columns:1fr 1fr;gap:8px;
+  margin:4px 0 16px;padding:5px;background:rgba(255,255,255,.05);
+  border:1px solid var(--border);border-radius:16px;
+}
+.quiz-mode-tab,.memory-list-tab{
+  border:0;border-radius:12px;padding:11px 12px;font-weight:800;
+  background:transparent;color:var(--muted);cursor:pointer;
+}
+.quiz-mode-tab.active,.memory-list-tab.active{
+  background:linear-gradient(135deg,#7546ef,#4169ee);color:#fff;
+  box-shadow:0 7px 18px rgba(83,68,221,.24);
+}
+.memory-quiz-head{align-items:center;}
+.memory-orb{
+  display:flex;align-items:center;justify-content:center;
+  min-width:72px;height:50px;padding:0 12px;border-radius:18px;
+  font-size:12px;font-weight:900;letter-spacing:.04em;
+  color:#fff;background:linear-gradient(135deg,#8c49e8,#376ae9);
+}
+.memory-quiz-controls{display:flex;flex-direction:column;gap:13px;}
+.memory-filter-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
+.memory-list-tabs{display:grid;grid-template-columns:1fr 1fr;gap:7px;padding:4px;background:rgba(255,255,255,.04);border-radius:14px;}
+.memory-action-grid{display:grid;grid-template-columns:1fr 1fr auto;gap:8px;}
+.memory-action-grid button{min-height:44px;}
+.memory-quiz-progress{
+  min-height:38px;display:flex;align-items:center;justify-content:center;
+  padding:8px 10px;border-radius:12px;background:rgba(106,78,225,.08);
+  font-size:13px;color:var(--muted);text-align:center;
+}
+.memory-table-card{margin-top:12px;padding:0!important;overflow:hidden;}
+.memory-table-title{display:flex;justify-content:space-between;align-items:center;padding:14px 15px 10px;}
+.memory-table-title strong{font-size:16px;}.memory-table-title span{font-size:12px;color:var(--muted);}
+.memory-table-wrap{overflow:auto;max-height:58vh;}
+.memory-table{width:100%;border-collapse:collapse;table-layout:fixed;}
+.memory-table th,.memory-table td{padding:12px 13px;border-top:1px solid var(--border);text-align:left;vertical-align:top;line-height:1.45;}
+.memory-table th{font-size:12px;color:var(--muted);background:rgba(255,255,255,.025);position:sticky;top:0;z-index:1;}
+.memory-table td{font-size:16px;font-weight:650;}
+.memory-table .memory-no-col{width:58px;text-align:center;}
+.memory-table td.memory-no-col strong{display:inline-flex;align-items:center;justify-content:center;width:28px;height:28px;border-radius:50%;background:rgba(113,75,225,.13);color:#9b7aff;font-size:13px;}
+@media(max-width:700px){
+  .quiz-mode-tabs{margin-top:0;margin-bottom:10px;}
+  .quiz-mode-tab,.memory-list-tab{padding:10px 8px;font-size:12px;}
+  .memory-filter-grid{grid-template-columns:1fr;gap:7px;}
+  .memory-action-grid{grid-template-columns:1fr 1fr;}
+  .memory-action-grid #stopMemoryQuiz{grid-column:1/-1;}
+  .memory-action-grid button{min-height:46px;font-size:12px;}
+  .memory-table-wrap{max-height:52vh;}
+  .memory-table th,.memory-table td{padding:11px 10px;}
+  .memory-table td{font-size:17px;}
+  .memory-table .memory-no-col{width:52px;}
+}
