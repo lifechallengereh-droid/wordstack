@@ -7,7 +7,7 @@
   <title>WordStack</title>
   <link rel="manifest" href="manifest.webmanifest" />
   <link rel="icon" href="icons/icon-192.png" />
-  <link rel="stylesheet" href="styles.css?v=7269" />
+  <link rel="stylesheet" href="styles.css?v=7270" />
   <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
   <script src="https://accounts.google.com/gsi/client" async defer></script>
 </head>
@@ -177,8 +177,13 @@
         </div>
 
         <div id="memoryQuizPane" class="hidden">
-          <div class="section-head memory-quiz-head"><div><span class="eyebrow">LISTEN & RECALL</span><h2>암기퀴즈</h2><p class="muted">한국어를 듣고 영어 단어나 영어 문장으로 즉시 답하는 훈련입니다.</p></div><div class="memory-orb">KR → EN</div></div>
+          <div class="section-head memory-quiz-head"><div><span class="eyebrow">LISTEN & RECALL</span><h2>암기퀴즈</h2><p id="memoryQuizDescription" class="muted">한국어를 듣고 영어 단어나 영어 문장으로 즉시 답하는 훈련입니다.</p></div><div id="memoryModeOrb" class="memory-orb">KR → EN</div></div>
           <div class="surface-card memory-quiz-controls">
+            <div class="memory-language-tabs" role="tablist" aria-label="암기퀴즈 언어 모드">
+              <button id="memoryKrMode" class="memory-language-tab active" type="button" aria-selected="true">KR 모드</button>
+              <button id="memoryEnMode" class="memory-language-tab" type="button" aria-selected="false">EN 모드</button>
+            </div>
+            <p id="memoryModeHelp" class="memory-mode-help">한국어를 듣고 영어로 바로 답하는 모드</p>
             <div class="memory-filter-grid">
               <label>단어장<select id="memoryQuizDeck"></select></label>
               <label>챕터<select id="memoryQuizChapter"></select></label>
@@ -289,8 +294,8 @@
     </div>
   </div>
   <div id="toast" class="toast hidden"></div>
-  <script src="app.js?v=7269"></script>
-  <script src="google-sync.js?v=7269"></script>
+  <script src="app.js?v=7270"></script>
+  <script src="google-sync.js?v=7270"></script>
 <script>
 window.addEventListener('load', () => {
   const splash = document.getElementById('brandSplash');

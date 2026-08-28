@@ -63,7 +63,7 @@ function migrateCard(c){
   c.due=c.due||todayISO();return c;
 }
 let state=load();
-let settings=Object.assign({newCardInterval:1,writtenStrictness:'normal',ttsEnabled:true,ttsLocale:'en-US',ttsRate:1,memoryQuizInterval:5,weakMinWrong:2,weakRate:0.4,cardDirectionPreset:'koFront',frontFields:DEFAULT_FRONT,backFields:DEFAULT_BACK,googleClientId:'',googleSheetUrl:'https://docs.google.com/spreadsheets/d/1Xlc6nummFrvCLkDiOMUtj_u4SpHwwwDlFcf95-N4g5I/edit',googleAutoSync:true},JSON.parse(localStorage.getItem(SETTINGS)||'{}'));
+let settings=Object.assign({newCardInterval:1,writtenStrictness:'normal',ttsEnabled:true,ttsLocale:'en-US',ttsRate:1,memoryQuizInterval:5,memoryQuizLanguage:'kr',weakMinWrong:2,weakRate:0.4,cardDirectionPreset:'koFront',frontFields:DEFAULT_FRONT,backFields:DEFAULT_BACK,googleClientId:'',googleSheetUrl:'https://docs.google.com/spreadsheets/d/1Xlc6nummFrvCLkDiOMUtj_u4SpHwwwDlFcf95-N4g5I/edit',googleAutoSync:true},JSON.parse(localStorage.getItem(SETTINGS)||'{}'));
 if(!Array.isArray(settings.frontFields))settings.frontFields=[...DEFAULT_FRONT];if(!Array.isArray(settings.backFields))settings.backFields=[...DEFAULT_BACK];
 let studyQueue=[],studyIndex=0,studyFlipped=false;
 let quiz=[],quizIndex=0,quizAnswers=[],quizChecked=false,selectedMCQ=null;
@@ -271,8 +271,9 @@ $('shuffleStudy').onclick=()=>{studyQueue=shuffle(studyQueue.slice(studyIndex));
 
 function quizCards(){return state.cards.filter(c=>inDeck(c,$('quizDeck').value))}
 
-// ===== 암기퀴즈: 한국어 자극 → 영어 회상 훈련 =====
+// ===== 암기퀴즈: KR / EN 양방향 듣기 → 즉시 회상 훈련 =====
 let memoryListMode='word';
+let memoryLanguageMode=settings.memoryQuizLanguage==='en'?'en':'kr';
 let memoryQuizRunning=false;
 let memoryQuizTimer=null;
 let memoryQuizRunId=0;
@@ -298,6 +299,7 @@ function renderMemoryQuizFilters(){
   memoryDeckOptions();
   if(current&&[...$('memoryQuizDeck').options].some(o=>o.value===current))$('memoryQuizDeck').value=current;
   memoryChapterOptions();
+  renderMemoryLanguageMode();
   renderMemoryQuizTable();
   updateMemoryIntervalLabel();
 }
@@ -307,9 +309,34 @@ function memoryQuizCards(){
   if(!deck)return[];
   return state.cards.filter(c=>c.category===deck&&(chapter==='__all'||c.chapter===chapter));
 }
+function memoryField(mode=memoryListMode,language=memoryLanguageMode){
+  if(language==='en')return mode==='example'?'englishExample':'englishWord';
+  return mode==='example'?'koreanExample':'koreanMeaning';
+}
+function memoryLanguageLabel(language=memoryLanguageMode){return language==='en'?'영어':'한국어'}
 function memoryQuizItems(mode=memoryListMode){
-  const field=mode==='example'?'koreanExample':'koreanMeaning';
+  const field=memoryField(mode,memoryLanguageMode);
   return memoryQuizCards().map(c=>({id:c.id,text:String(c[field]||'').trim()})).filter(x=>x.text);
+}
+function setMemoryLanguageMode(mode){
+  stopMemoryQuiz(true);
+  memoryLanguageMode=mode==='en'?'en':'kr';
+  settings.memoryQuizLanguage=memoryLanguageMode;
+  saveSettings();
+  renderMemoryLanguageMode();
+  renderMemoryQuizTable();
+}
+function renderMemoryLanguageMode(){
+  const isEn=memoryLanguageMode==='en';
+  $('memoryKrMode')?.classList.toggle('active',!isEn);
+  $('memoryEnMode')?.classList.toggle('active',isEn);
+  $('memoryKrMode')?.setAttribute('aria-selected',String(!isEn));
+  $('memoryEnMode')?.setAttribute('aria-selected',String(isEn));
+  if($('memoryModeOrb'))$('memoryModeOrb').textContent=isEn?'EN → KR':'KR → EN';
+  if($('memoryQuizDescription'))$('memoryQuizDescription').textContent=isEn?'영어를 듣고 한국어 뜻이나 한국어 문장으로 즉시 답하는 훈련입니다.':'한국어를 듣고 영어 단어나 영어 문장으로 즉시 답하는 훈련입니다.';
+  if($('memoryModeHelp'))$('memoryModeHelp').textContent=isEn?'영어를 듣고 한국어로 바로 답하는 모드':'한국어를 듣고 영어로 바로 답하는 모드';
+  if($('memoryWordListTab'))$('memoryWordListTab').textContent=isEn?'영어 단어 목록':'한국어 단어 목록';
+  if($('memoryExampleListTab'))$('memoryExampleListTab').textContent=isEn?'영어 예문 목록':'한국어 예문 목록';
 }
 function setMemoryListMode(mode){
   memoryListMode=mode==='example'?'example':'word';
@@ -321,10 +348,11 @@ function renderMemoryQuizTable(){
   const table=$('memoryQuizTable');if(!table)return;
   const items=memoryQuizItems();
   const isExample=memoryListMode==='example';
-  $('memoryTableTitle').textContent=isExample?'한국어 예문 목록':'한국어 단어 목록';
-  $('memoryContentHeader').textContent=isExample?'한국어 예문':'한국어 단어';
+  const lang=memoryLanguageLabel();
+  $('memoryTableTitle').textContent=`${lang} ${isExample?'예문':'단어'} 목록`;
+  $('memoryContentHeader').textContent=`${lang} ${isExample?'예문':'단어'}`;
   $('memoryTableCount').textContent=`${items.length}개`;
-  table.innerHTML=items.map((item,i)=>`<tr><td class="memory-no-col"><strong>${i+1}</strong></td><td>${esc(item.text)}</td></tr>`).join('')||`<tr><td colspan="2" class="muted">선택한 범위에 ${isExample?'한국어 예문':'한국어 단어'}이 없습니다.</td></tr>`;
+  table.innerHTML=items.map((item,i)=>`<tr><td class="memory-no-col"><strong>${i+1}</strong></td><td>${esc(item.text)}</td></tr>`).join('')||`<tr><td colspan="2" class="muted">선택한 범위에 ${lang} ${isExample?'예문':'단어'}이 없습니다.</td></tr>`;
 }
 function updateMemoryIntervalLabel(){const sec=Math.min(10,Math.max(2,Number(settings.memoryQuizInterval)||5));if($('memoryQuizIntervalLabel'))$('memoryQuizIntervalLabel').textContent=`${sec}초`}
 function stopMemoryQuiz(silent=false){
@@ -342,23 +370,26 @@ function startMemoryQuiz(mode){
   if(!('speechSynthesis'in window))return toast('이 기기에서 음성 읽기를 사용할 수 없습니다.');
   setMemoryListMode(mode);
   const items=memoryQuizItems(mode);
-  if(!items.length)return toast(mode==='example'?'읽을 한국어 예문이 없습니다.':'읽을 한국어 단어가 없습니다.');
+  const isEn=memoryLanguageMode==='en';
+  const langName=isEn?'영어':'한국어';
+  if(!items.length)return toast(`읽을 ${langName} ${mode==='example'?'예문':'단어'}이 없습니다.`);
   stopMemoryQuiz(true);
   memoryQuizRunning=true;
   const runId=++memoryQuizRunId;
   const sec=Math.min(10,Math.max(2,Number(settings.memoryQuizInterval)||5));
   $('stopMemoryQuiz').disabled=false;$('startMemoryWords').disabled=true;$('startMemoryExamples').disabled=true;
+  const speechLang=isEn?(settings.ttsLocale||'en-US'):'ko-KR';
   const speakIndex=(i)=>{
     if(!memoryQuizRunning||runId!==memoryQuizRunId)return;
     if(i>=items.length){
       memoryQuizRunning=false;$('stopMemoryQuiz').disabled=true;$('startMemoryWords').disabled=false;$('startMemoryExamples').disabled=false;
-      $('memoryQuizProgress').innerHTML=`완료 · ${items.length}개 발화 완료`;
+      $('memoryQuizProgress').innerHTML=`완료 · ${items.length}개 ${langName} 발화 완료`;
       return;
     }
     const label=mode==='example'?'예문':'단어';
-    $('memoryQuizProgress').innerHTML=`${i+1} / ${items.length} · ${label} 발화 중`;
-    const spoken=`${i+1}번. ${items[i].text}`;
-    speakKorean(spoken,{cancel:false,onend:()=>{
+    $('memoryQuizProgress').innerHTML=`${i+1} / ${items.length} · ${langName} ${label} 발화 중`;
+    const spoken=isEn?`Number ${i+1}. ${items[i].text}`:`${i+1}번. ${items[i].text}`;
+    speakByLang(spoken,speechLang,{cancel:false,onend:()=>{
       if(!memoryQuizRunning||runId!==memoryQuizRunId)return;
       $('memoryQuizProgress').innerHTML=`${i+1} / ${items.length} · 다음 발화까지 ${sec}초`;
       memoryQuizTimer=setTimeout(()=>speakIndex(i+1),sec*1000);
@@ -377,6 +408,8 @@ function setQuizMode(mode){
 }
 $('standardQuizTab').onclick=()=>setQuizMode('standard');
 $('memoryQuizTab').onclick=()=>setQuizMode('memory');
+$('memoryKrMode').onclick=()=>setMemoryLanguageMode('kr');
+$('memoryEnMode').onclick=()=>setMemoryLanguageMode('en');
 $('memoryQuizDeck').onchange=()=>{stopMemoryQuiz(true);memoryChapterOptions();renderMemoryQuizTable()};
 $('memoryQuizChapter').onchange=()=>{stopMemoryQuiz(true);renderMemoryQuizTable()};
 $('memoryWordListTab').onclick=()=>{stopMemoryQuiz(true);setMemoryListMode('word')};

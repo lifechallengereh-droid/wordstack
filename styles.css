@@ -1436,3 +1436,45 @@ body{
   .memory-table td{font-size:17px;}
   .memory-table .memory-no-col{width:52px;}
 }
+
+
+/* ==========================================================
+   WordStack v7.2.7.0 — Memory Quiz KR / EN modes
+   ========================================================== */
+.memory-language-tabs{
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:8px;
+  padding:5px;
+  border:1px solid var(--border);
+  border-radius:16px;
+  background:rgba(255,255,255,.045);
+}
+.memory-language-tab{
+  min-height:46px;
+  border:0;
+  border-radius:12px;
+  background:transparent;
+  color:var(--muted);
+  font-size:14px;
+  font-weight:900;
+  letter-spacing:.03em;
+  cursor:pointer;
+}
+.memory-language-tab.active{
+  color:#fff;
+  background:linear-gradient(135deg,#7546ef,#4169ee);
+  box-shadow:0 7px 18px rgba(83,68,221,.24);
+}
+.memory-mode-help{
+  margin:-4px 0 0;
+  text-align:center;
+  color:var(--muted);
+  font-size:12px;
+  font-weight:700;
+}
+@media(max-width:700px){
+  .memory-language-tabs{gap:6px;padding:4px;}
+  .memory-language-tab{min-height:44px;font-size:13px;}
+  .memory-mode-help{font-size:11px;}
+}
