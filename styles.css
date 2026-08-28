@@ -1478,3 +1478,108 @@ body{
   .memory-language-tab{min-height:44px;font-size:13px;}
   .memory-mode-help{font-size:11px;}
 }
+
+
+/* ==========================================================
+   WordStack v7.2.7.3 — Study repeat toggle + repeating TTS
+   ========================================================== */
+.study-state-toggles{
+  display:flex;
+  align-items:center;
+  justify-content:flex-end;
+  gap:12px;
+  min-width:0;
+}
+.repeat-status-toggle{
+  position:absolute;
+  opacity:0;
+  pointer-events:none;
+}
+.repeat-toggle-wrap > span:first-child{
+  min-width:auto;
+}
+.repeat-status-toggle:checked + .repeat-switch{
+  background:linear-gradient(135deg,#7251ef,#3c72ee);
+}
+.repeat-status-toggle:checked + .repeat-switch::after{
+  transform:translateX(21px);
+}
+.repeat-status-toggle:not(:checked) + .repeat-switch{
+  background:#71798f;
+}
+#ttsStudyControls .soft-btn.is-repeating{
+  background:linear-gradient(135deg,#6847df,#3c67d9)!important;
+  border-color:rgba(158,142,255,.72)!important;
+  color:#fff!important;
+  box-shadow:0 0 0 2px rgba(112,82,232,.16)!important;
+}
+.study-audio-icon{
+  display:inline-flex;
+  min-width:18px;
+  align-items:center;
+  justify-content:center;
+  font-weight:900;
+  font-size:1.05em;
+}
+@media(max-width:700px){
+  body.study-mode #study .study-state-toggles{gap:7px;}
+  body.study-mode #study .repeat-toggle-wrap{gap:4px!important;}
+  body.study-mode #study .repeat-toggle-wrap > span:first-child{
+    min-width:25px!important;
+    font-size:9px!important;
+  }
+  body.study-mode #study .repeat-status-toggle:checked + .repeat-switch::after{
+    transform:translateX(15px)!important;
+  }
+  body.study-mode #study .study-audio-icon{min-width:15px;font-size:11px;}
+}
+@media(max-width:360px){
+  body.study-mode #study .study-state-toggles{gap:4px;}
+  body.study-mode #study .memory-toggle-wrap{gap:3px!important;}
+  body.study-mode #study .memory-toggle-wrap > span:first-child{font-size:8.5px!important;}
+}
+
+
+/* ==========================================================
+   WordStack v7.2.7.4 — custom playing icon
+   재생중 아이콘을 II 문자 대신 둥근 2-bar 아이콘으로 변경
+   ========================================================== */
+.study-audio-icon.pause-like{
+  position:relative;
+  width:16px;
+  min-width:16px;
+  height:18px;
+  font-size:0 !important;
+  color:currentColor;
+}
+.study-audio-icon.pause-like::before,
+.study-audio-icon.pause-like::after{
+  content:"";
+  position:absolute;
+  top:0;
+  width:5px;
+  height:18px;
+  border-radius:999px;
+  background:currentColor;
+  opacity:.98;
+}
+.study-audio-icon.pause-like::before{left:1px;}
+.study-audio-icon.pause-like::after{right:1px;}
+
+#ttsStudyControls .soft-btn.is-repeating .study-audio-icon.pause-like::before,
+#ttsStudyControls .soft-btn.is-repeating .study-audio-icon.pause-like::after{
+  background:#fff;
+}
+
+@media(max-width:700px){
+  body.study-mode #study .study-audio-icon.pause-like{
+    width:14px;
+    min-width:14px;
+    height:16px;
+  }
+  body.study-mode #study .study-audio-icon.pause-like::before,
+  body.study-mode #study .study-audio-icon.pause-like::after{
+    width:4px;
+    height:16px;
+  }
+}

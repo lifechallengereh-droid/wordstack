@@ -68,6 +68,8 @@ if(!Array.isArray(settings.frontFields))settings.frontFields=[...DEFAULT_FRONT];
 let studyQueue=[],studyIndex=0,studyFlipped=false;
 let quiz=[],quizIndex=0,quizAnswers=[],quizChecked=false,selectedMCQ=null;
 let activeStudyStart=null,activeStudyTimer=null;
+let studyRepeatEnabled=false,studyRepeatKind=null,studyRepeatTimer=null,studyRepeatRunId=0;
+const STUDY_REPEAT_INTERVAL_MS=3000;
 
 function persist(){localStorage.setItem(KEY,JSON.stringify(state))}
 function save(){persist();renderAll()}
@@ -117,7 +119,7 @@ $('exportExcel').onclick=()=>exportCardsExcel(currentFilteredCards(),'flashcards
 $('exportDbExcel').onclick=()=>exportCardsExcel(state.cards,'wordstack_word_db.xlsx');
 $('exportDbExcelSettings').onclick=()=>exportCardsExcel(state.cards,'wordstack_word_db.xlsx');
 
-function refreshStudy(force=true){const deck=$('studyDeckFilter')?.value||'__all',due=dueCards(deck);$('dueSummary').textContent=`오늘복습 ${due.length}장 · 전체 ${state.cards.filter(c=>inDeck(c,deck)).length}장`;$('heroDue').textContent=due.length;$('studyEmpty').classList.toggle('hidden',due.length>0);$('studyArea').classList.toggle('hidden',due.length===0);if(force||!studyQueue.length)studyQueue=shuffle(due);studyIndex=Math.min(studyIndex,Math.max(0,studyQueue.length-1));studyFlipped=false;showStudyCard()}
+function refreshStudy(force=true){if(force&&typeof stopStudyRepeat==='function')stopStudyRepeat(true);const deck=$('studyDeckFilter')?.value||'__all',due=dueCards(deck);$('dueSummary').textContent=`오늘복습 ${due.length}장 · 전체 ${state.cards.filter(c=>inDeck(c,deck)).length}장`;$('heroDue').textContent=due.length;$('studyEmpty').classList.toggle('hidden',due.length>0);$('studyArea').classList.toggle('hidden',due.length===0);if(force||!studyQueue.length)studyQueue=shuffle(due);studyIndex=Math.min(studyIndex,Math.max(0,studyQueue.length-1));studyFlipped=false;showStudyCard()}
 function currentStudySide(){return studyFlipped?'back':'front'}
 function studySpeechTarget(c,kind){
   const fields=sideFields(currentStudySide());
@@ -143,14 +145,76 @@ function showStudyCard(){const c=studyQueue[studyIndex];if(!c)return;$('cardSide
   $('speakWordBtn').disabled=!wordTarget.text;$('speakExampleBtn').disabled=!exampleTarget.text;
   $('speakWordBtn').title=wordTarget.lang.startsWith('ko')?'현재 카드의 한국어 단어 읽기':'현재 카드의 영어 단어 읽기';
   $('speakExampleBtn').title=exampleTarget.lang.startsWith('ko')?'현재 카드의 한국어 예문 읽기':'현재 카드의 영어 예문 읽기';
+  syncStudyRepeatUI();
 }
 function chooseVoice(lang){const voices=window.speechSynthesis?.getVoices?.()||[];const exact=voices.find(v=>String(v.lang).toLowerCase()===String(lang).toLowerCase());if(exact)return exact;const base=String(lang).slice(0,2).toLowerCase();return voices.find(v=>String(v.lang).toLowerCase().startsWith(base))||null}
 function speakByLang(text,lang,opts={}){if(!settings.ttsEnabled||!text||!('speechSynthesis'in window))return null;if(opts.cancel!==false)window.speechSynthesis.cancel();const u=new SpeechSynthesisUtterance(text);u.lang=lang||'ko-KR';const voice=chooseVoice(u.lang);if(voice)u.voice=voice;u.rate=Number(settings.ttsRate)||1;if(typeof opts.onend==='function')u.onend=opts.onend;if(typeof opts.onerror==='function')u.onerror=opts.onerror;window.speechSynthesis.speak(u);return u}
 function speakEnglish(text){if(!text||!/[A-Za-z]/.test(text))return;speakByLang(text,settings.ttsLocale||'en-US')}
 function speakKorean(text,opts={}){if(!text)return null;return speakByLang(text,'ko-KR',opts)}
 window.speakText=(id,side,e)=>{if(e)e.stopPropagation();const c=state.cards.find(x=>x.id===id);if(!c)return;const isKo=side==='koreanMeaning'||side==='koreanExample';speakByLang(c[side],isKo?'ko-KR':settings.ttsLocale||'en-US')};
-$('speakWordBtn').onclick=e=>{e.stopPropagation();const c=studyQueue[studyIndex];if(!c)return;const t=studySpeechTarget(c,'word');if(t.text)speakByLang(t.text,t.lang)};
-$('speakExampleBtn').onclick=e=>{e.stopPropagation();const c=studyQueue[studyIndex];if(!c)return;const t=studySpeechTarget(c,'example');if(t.text)speakByLang(t.text,t.lang)};
+function syncStudyRepeatUI(){
+  const repeatToggle=$('repeatStatusToggle');
+  if(repeatToggle)repeatToggle.checked=studyRepeatEnabled;
+  const wordActive=studyRepeatKind==='word',exampleActive=studyRepeatKind==='example';
+  const wordIcon=$('speakWordIcon'),exampleIcon=$('speakExampleIcon');
+  const wordLabel=$('speakWordLabel'),exampleLabel=$('speakExampleLabel');
+  const wordBtn=$('speakWordBtn'),exampleBtn=$('speakExampleBtn');
+  if(wordIcon){
+    wordIcon.textContent=wordActive?'':'🔊';
+    wordIcon.classList.toggle('pause-like',wordActive);
+    wordIcon.setAttribute('aria-label',wordActive?'재생 중':'단어 듣기');
+  }
+  if(exampleIcon){
+    exampleIcon.textContent=exampleActive?'':'▶';
+    exampleIcon.classList.toggle('pause-like',exampleActive);
+    exampleIcon.setAttribute('aria-label',exampleActive?'재생 중':'예문 듣기');
+  }
+  if(wordLabel)wordLabel.textContent=wordActive?'단어 재생중':'단어 듣기';
+  if(exampleLabel)exampleLabel.textContent=exampleActive?'예문 재생중':'예문 듣기';
+  if(wordBtn){wordBtn.classList.toggle('is-repeating',wordActive);wordBtn.setAttribute('aria-pressed',String(wordActive));}
+  if(exampleBtn){exampleBtn.classList.toggle('is-repeating',exampleActive);exampleBtn.setAttribute('aria-pressed',String(exampleActive));}
+}
+function stopStudyRepeat(cancelSpeech=true){
+  studyRepeatRunId++;
+  studyRepeatKind=null;
+  clearTimeout(studyRepeatTimer);studyRepeatTimer=null;
+  if(cancelSpeech&&'speechSynthesis'in window)window.speechSynthesis.cancel();
+  syncStudyRepeatUI();
+}
+function startStudyRepeat(kind){
+  if(!studyRepeatEnabled)return;
+  if(!settings.ttsEnabled)return toast('설정에서 음성 읽기(TTS)를 켜주세요.');
+  if(!('speechSynthesis'in window))return toast('이 기기에서 음성 읽기를 사용할 수 없습니다.');
+  const c=studyQueue[studyIndex];if(!c)return;
+  const target=studySpeechTarget(c,kind);if(!target.text)return;
+  stopStudyRepeat(true);
+  studyRepeatKind=kind;
+  const runId=++studyRepeatRunId;
+  syncStudyRepeatUI();
+  const cycle=()=>{
+    if(!studyRepeatEnabled||studyRepeatKind!==kind||runId!==studyRepeatRunId)return;
+    speakByLang(target.text,target.lang,{cancel:false,onend:()=>{
+      if(!studyRepeatEnabled||studyRepeatKind!==kind||runId!==studyRepeatRunId)return;
+      studyRepeatTimer=setTimeout(cycle,STUDY_REPEAT_INTERVAL_MS);
+    },onerror:()=>{
+      if(!studyRepeatEnabled||studyRepeatKind!==kind||runId!==studyRepeatRunId)return;
+      studyRepeatTimer=setTimeout(cycle,STUDY_REPEAT_INTERVAL_MS);
+    }});
+  };
+  cycle();
+}
+function handleStudyAudio(kind,e){
+  if(e)e.stopPropagation();
+  if(studyRepeatEnabled){
+    if(studyRepeatKind===kind){stopStudyRepeat(true);return;}
+    startStudyRepeat(kind);return;
+  }
+  stopStudyRepeat(true);
+  const c=studyQueue[studyIndex];if(!c)return;
+  const t=studySpeechTarget(c,kind);if(t.text)speakByLang(t.text,t.lang);
+}
+$('speakWordBtn').onclick=e=>handleStudyAudio('word',e);
+$('speakExampleBtn').onclick=e=>handleStudyAudio('example',e);
 
 let studySwipe={active:false,startX:0,startY:0,lastX:0,lastY:0,moved:false,suppressClick:false};
 const swipeCard=$('flashcard');
@@ -165,6 +229,7 @@ function animateStudyCard(direction){
   window.setTimeout(()=>swipeCard.classList.remove('swipe-in-left','swipe-in-right'),320);
 }
 function navigateStudyCard(direction){
+  stopStudyRepeat(true);
   if(!studyQueue.length)return;
   const nextIndex=direction==='next'?studyIndex+1:studyIndex-1;
   if(nextIndex<0){toast('첫 번째 카드입니다.');return}
@@ -241,6 +306,7 @@ if(swipeCard){
 
   swipeCard.onclick=()=>{
     if(studySwipe.suppressClick)return;
+    stopStudyRepeat(true);
     studyFlipped=!studyFlipped;showStudyCard()
   };
   swipeCard.onkeydown=e=>{
@@ -250,6 +316,19 @@ if(swipeCard){
   };
 }
 function schedule(c,rate){let interval=Math.max(0,Number(c.interval)||0),ease=Math.max(1.3,Number(c.ease)||2.5),reps=Number(c.reps)||0;if(rate==='again'){interval=0;c.lapses=(c.lapses||0)+1;ease=Math.max(1.3,ease-.20)}else if(rate==='hard'){interval=reps===0?1:Math.max(1,interval*1.2);ease=Math.max(1.3,ease-.15);reps++}else if(rate==='good'){interval=reps===0?1:reps===1?3:Math.max(2,interval*ease);reps++}else{interval=reps===0?3:reps===1?6:Math.max(4,interval*ease*1.3);ease+=.15;reps++}c.ease=Number(ease.toFixed(2));c.interval=Math.round(interval);c.reps=reps;c.reviews=(c.reviews||0)+1;c.lastReviewed=todayISO();c.due=rate==='again'?todayISO():addDays(c.interval);state.totalReviews=(state.totalReviews||0)+1;state.reviewHistory.push({date:new Date().toISOString(),cardId:c.id,rate})}
+
+const repeatStatusToggle=$('repeatStatusToggle');
+if(repeatStatusToggle){
+  repeatStatusToggle.checked=false;
+  repeatStatusToggle.addEventListener('change',e=>{
+    e.stopPropagation();
+    studyRepeatEnabled=repeatStatusToggle.checked;
+    if(!studyRepeatEnabled)stopStudyRepeat(true);else syncStudyRepeatUI();
+    toast(studyRepeatEnabled?'반복 재생을 켰습니다. 단어/예문 듣기를 누르면 3초 간격으로 반복됩니다.':'반복 재생을 껐습니다.');
+  });
+  repeatStatusToggle.addEventListener('click',e=>e.stopPropagation());
+}
+syncStudyRepeatUI();
 
 const memoryStatusToggle=$('memoryStatusToggle');
 if(memoryStatusToggle){
@@ -266,8 +345,8 @@ if(memoryStatusToggle){
   memoryStatusToggle.addEventListener('click',e=>e.stopPropagation());
 }
 
-$('ratingBtns').onclick=e=>{const b=e.target.closest('button[data-rate]');if(!b)return;const c=studyQueue[studyIndex];schedule(c,b.dataset.rate);if(b.dataset.rate==='again')studyQueue.push(c);studyIndex++;if(studyIndex>=studyQueue.length){persist();toast('오늘의 학습을 마쳤습니다.');studyQueue=[];studyIndex=0;refreshStudy(true)}else{persist();studyFlipped=false;showStudyCard();renderStats()}};
-$('shuffleStudy').onclick=()=>{studyQueue=shuffle(studyQueue.slice(studyIndex));studyIndex=0;showStudyCard()};$('reverseStudy').onclick=()=>{const f=settings.frontFields;settings.frontFields=[...settings.backFields];settings.backFields=[...f];settings.cardDirectionPreset='custom';saveSettings();renderFieldOptions();studyFlipped=false;showStudyCard();toast('앞면과 뒷면 구성을 서로 바꿨습니다.')};$('studyDeckFilter').onchange=()=>{studyQueue=[];studyIndex=0;refreshStudy(true)};
+$('ratingBtns').onclick=e=>{const b=e.target.closest('button[data-rate]');if(!b)return;stopStudyRepeat(true);const c=studyQueue[studyIndex];schedule(c,b.dataset.rate);if(b.dataset.rate==='again')studyQueue.push(c);studyIndex++;if(studyIndex>=studyQueue.length){persist();toast('오늘의 학습을 마쳤습니다.');studyQueue=[];studyIndex=0;refreshStudy(true)}else{persist();studyFlipped=false;showStudyCard();renderStats()}};
+$('shuffleStudy').onclick=()=>{stopStudyRepeat(true);studyQueue=shuffle(studyQueue.slice(studyIndex));studyIndex=0;showStudyCard()};$('reverseStudy').onclick=()=>{stopStudyRepeat(true);const f=settings.frontFields;settings.frontFields=[...settings.backFields];settings.backFields=[...f];settings.cardDirectionPreset='custom';saveSettings();renderFieldOptions();studyFlipped=false;showStudyCard();toast('앞면과 뒷면 구성을 서로 바꿨습니다.')};$('studyDeckFilter').onchange=()=>{stopStudyRepeat(true);studyQueue=[];studyIndex=0;refreshStudy(true)};
 
 function quizCards(){return state.cards.filter(c=>inDeck(c,$('quizDeck').value))}
 
@@ -474,7 +553,7 @@ function attachChapterDrag(){document.querySelectorAll('.chapter-order-item').fo
 $('sortChaptersNaturalBtn').onclick=()=>{chapterOrderDraft.sort(naturalChapterSort);renderChapterOrderList()};$('saveChapterOrderBtn').onclick=()=>{deckMeta(chapterOrderDeck).chapters=[...chapterOrderDraft];persist();$('chapterOrderModal').classList.add('hidden');renderDeckLibrary();renderStats();toast('챕터 순서를 저장했습니다.')};$('closeChapterOrderModal').onclick=()=>{$('chapterOrderModal').classList.add('hidden')};$('chapterOrderModal').onclick=e=>{if(e.target===$('chapterOrderModal'))$('chapterOrderModal').classList.add('hidden')};
 
 const PAGE_TITLES={study:'오늘의 학습',weak:'취약단어',quiz:'퀴즈',stats:'연간 학습 통계',settings:'설정',decks:'내 단어장',cards:'카드 관리'};
-function navigate(id){if(id!=='quiz'&&typeof stopMemoryQuiz==='function')stopMemoryQuiz(true);if($('study').classList.contains('active')&&id!=='study')stopStudyTimer();document.querySelectorAll('.panel').forEach(x=>x.classList.remove('active'));$(id)?.classList.add('active');document.body.classList.toggle('study-mode',id==='study');document.querySelectorAll('.nav-item').forEach(x=>x.classList.toggle('active',x.dataset.tab===id));$('pageTitle').textContent=PAGE_TITLES[id]||'WordStack';if(id==='study'){refreshStudy(true);startStudyTimer()}if(id==='stats')renderStats();if(id==='decks')renderDeckLibrary();if(id==='weak')renderWeakList();window.scrollTo({top:0,behavior:'smooth'})}
+function navigate(id){if(id!=='quiz'&&typeof stopMemoryQuiz==='function')stopMemoryQuiz(true);if(id!=='study'&&typeof stopStudyRepeat==='function')stopStudyRepeat(true);if($('study').classList.contains('active')&&id!=='study')stopStudyTimer();document.querySelectorAll('.panel').forEach(x=>x.classList.remove('active'));$(id)?.classList.add('active');document.body.classList.toggle('study-mode',id==='study');document.querySelectorAll('.nav-item').forEach(x=>x.classList.toggle('active',x.dataset.tab===id));$('pageTitle').textContent=PAGE_TITLES[id]||'WordStack';if(id==='study'){refreshStudy(true);startStudyTimer()}if(id==='stats')renderStats();if(id==='decks')renderDeckLibrary();if(id==='weak')renderWeakList();window.scrollTo({top:0,behavior:'smooth'})}
 window.navigate=navigate;document.querySelectorAll('[data-tab]').forEach(t=>t.onclick=()=>navigate(t.dataset.tab));document.querySelectorAll('[data-go]').forEach(t=>t.onclick=()=>navigate(t.dataset.go));$('deckMenuBtn').onclick=()=>navigate('decks');$('studyWeakBtn').onclick=()=>{$('studyDeckFilter').value='__weak';navigate('study')};
 let deferredPrompt=null;window.addEventListener('beforeinstallprompt',e=>{e.preventDefault();deferredPrompt=e;$('installBtn').classList.remove('hidden')});$('installBtn').onclick=async()=>{if(!deferredPrompt)return;deferredPrompt.prompt();await deferredPrompt.userChoice;deferredPrompt=null;$('installBtn').classList.add('hidden')};if('serviceWorker'in navigator)window.addEventListener('load',()=>navigator.serviceWorker.register('./sw.js').catch(console.warn));
 renderAll();startStudyTimer();setInterval(updateStudyActualDate,60000);

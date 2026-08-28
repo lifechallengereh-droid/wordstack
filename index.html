@@ -7,7 +7,7 @@
   <title>WordStack</title>
   <link rel="manifest" href="manifest.webmanifest" />
   <link rel="icon" href="icons/icon-192.png" />
-  <link rel="stylesheet" href="styles.css?v=7271" />
+  <link rel="stylesheet" href="styles.css?v=7274" />
   <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
   <script src="https://accounts.google.com/gsi/client" async defer></script>
 </head>
@@ -69,16 +69,23 @@
           </div>
           <div class="study-progress-row">
             <span id="studyPosition">0 / 0</span>
-            <label class="memory-toggle-wrap" for="memoryStatusToggle">
-              <span id="memoryStatusText">모름</span>
-              <input id="memoryStatusToggle" class="memory-status-toggle" type="checkbox" checked>
-              <span class="memory-switch" aria-hidden="true"></span>
-            </label>
+            <div class="study-state-toggles">
+              <label class="memory-toggle-wrap repeat-toggle-wrap" for="repeatStatusToggle">
+                <span id="repeatStatusText">반복</span>
+                <input id="repeatStatusToggle" class="repeat-status-toggle" type="checkbox">
+                <span class="memory-switch repeat-switch" aria-hidden="true"></span>
+              </label>
+              <label class="memory-toggle-wrap" for="memoryStatusToggle">
+                <span id="memoryStatusText">모름</span>
+                <input id="memoryStatusToggle" class="memory-status-toggle" type="checkbox" checked>
+                <span class="memory-switch" aria-hidden="true"></span>
+              </label>
+            </div>
           </div>
           <div class="swipe-guide" aria-hidden="true"><span>← 오른쪽: 이전 카드</span><span>왼쪽: 다음 카드 →</span></div>
           <div id="ttsStudyControls" class="action-grid two-col">
-            <button id="speakWordBtn" class="soft-btn">🔊 <span>단어 듣기</span></button>
-            <button id="speakExampleBtn" class="soft-btn">▶ <span>예문 듣기</span></button>
+            <button id="speakWordBtn" class="soft-btn" type="button"><span id="speakWordIcon" class="study-audio-icon" aria-hidden="true">🔊</span><span id="speakWordLabel">단어 듣기</span></button>
+            <button id="speakExampleBtn" class="soft-btn" type="button"><span id="speakExampleIcon" class="study-audio-icon" aria-hidden="true">▶</span><span id="speakExampleLabel">예문 듣기</span></button>
           </div>
           <div id="ratingBtns" class="rating hidden">
             <button data-rate="again" class="rate-btn again"><strong>다시</strong><small>오늘</small></button>
@@ -177,7 +184,7 @@
         </div>
 
         <div id="memoryQuizPane" class="hidden">
-          <div class="section-head memory-quiz-head"><div><span class="eyebrow">LISTEN & RECALL</span><h2>암기퀴즈</h2><p id="memoryQuizDescription" class="muted">한국어를 듣고 영어 단어나 영어 문장으로 즉시 답하는 훈련입니다.</p></div><div id="memoryModeOrb" class="memory-orb">KR → EN</div></div>
+          <div class="section-head memory-quiz-head"><div><span class="eyebrow">LISTEN & RECALL</span><h2>암기퀴즈</h2><p id="memoryQuizDescription" class="muted">한국어를 듣고 영어 단어나 영어 문장으로 즉시 답하는 훈련입니다.</p></div></div>
           <div class="surface-card memory-quiz-controls">
             <div class="memory-language-tabs" role="tablist" aria-label="암기퀴즈 언어 모드">
               <button id="memoryKrMode" class="memory-language-tab active" type="button" aria-selected="true">KR 모드</button>
@@ -294,8 +301,8 @@
     </div>
   </div>
   <div id="toast" class="toast hidden"></div>
-  <script src="app.js?v=7271"></script>
-  <script src="google-sync.js?v=7271"></script>
+  <script src="app.js?v=7274"></script>
+  <script src="google-sync.js?v=7274"></script>
 <script>
 window.addEventListener('load', () => {
   const splash = document.getElementById('brandSplash');
